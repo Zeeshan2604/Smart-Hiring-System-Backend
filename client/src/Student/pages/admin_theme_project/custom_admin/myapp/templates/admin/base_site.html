@@ -1,0 +1,13 @@
+{% extends "admin/base_site.html" %}
+{% block title %}My Custom Admin{% endblock %}
+{% block extrastyle %}
+{{ block.super }}
+<link rel="icon" type="image/x-icon" href="{% static 'myapp/favicon.ico' %}">
+<style>
+    {
+            {
+            internal_css|safe
+        }
+    }
+</style>
+{% endblock %}
