@@ -4,7 +4,7 @@
   "description": "Smart Hiring System Backend API",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node start.js",
     "dev": "nodemon index.js",
     "build": "npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
