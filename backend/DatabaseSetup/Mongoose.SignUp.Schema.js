@@ -6,17 +6,42 @@ const bcrypt=require("bcryptjs");
 dotenv.config({
   path: "./.env",
 });
-const { MONGOOSE_CONNECTION } = process.env;
+
+// Get MongoDB connection string with fallback
+const MONGOOSE_CONNECTION = process.env.MONGOOSE_CONNECTION || process.env.MONGODB_URI || "mongodb://localhost:27017/smart-hiring-system";
 
 mongoose.set("strictQuery", false);
-mongoose.connect(
-  MONGOOSE_CONNECTION,
-  {
-    useNewUrlParser: true,
+
+// Connect to MongoDB with error handling
+const connectDB = async () => {
+  try {
+    await mongoose.connect(MONGOOSE_CONNECTION, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    });
+    console.log("Database connection established successfully");
+  } catch (error) {
+    console.error("Database connection failed:", error.message);
+    console.log("Application will continue without database connection");
+    // Don't throw error, let the app continue
   }
-);
+};
+
+// Call the connection function
+connectDB();
+
 mongoose.connection.on("open", () => {
   console.log("Database connection established");
+});
+
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error:", err.message);
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.log("MongoDB disconnected");
 });
 
 //Schema for SignUp Testing
