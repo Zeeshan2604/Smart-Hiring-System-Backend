@@ -27,3 +27,4 @@ services:
   - type: redis
     name: smart-hiring-redis
     plan: free
+    ipAllowList: []
