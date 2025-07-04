@@ -9,6 +9,11 @@ const rateLimit = require('express-rate-limit');
 const { redis } = require('./redisClient');
 // const __dirname = path.resolve();
 
+// Load environment variables first
+dotenv.config({
+  path: "./.env",
+});
+
 // Add request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
@@ -27,33 +32,40 @@ app.use("*", cors(corsOptions), function (req, res, next) {
   next();
 });
 
-const { Router1,Router2,Router3,Router4, Router5 ,Router6,Router7,Router8,Router9,Router10,Router11,Router12,Router13,Router14} = require("./Routers/router.config");
-const otherRoutes = require('./Routes/Other_Routes');
-
 //Body Parsing Configuration
 app.use(express.json());
 //Cookie Parsing Configuration
 app.use(cookieParser());
-
-//Environmental file Configuration
-dotenv.config({
-  path: "./.env",
-});
 
 const PORT = process.env.PORT || 8080;
 
 // Debug route to check if server is running
 app.get('/health', (req, res) => {
   console.log('Health check endpoint hit');
-  res.json({ status: 'ok', message: 'Server is running' });
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    port: PORT
   });
-
-// Sentry initialization
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  tracesSampleRate: 1.0,
 });
-app.use(Sentry.Handlers.requestHandler());
+
+// Simple test route
+app.get('/test', (req, res) => {
+  res.json({ message: 'Server is working!' });
+});
+
+// Sentry initialization (only if DSN is provided)
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+  });
+  app.use(Sentry.Handlers.requestHandler());
+  console.log('Sentry initialized');
+} else {
+  console.log('Sentry DSN not provided, skipping Sentry initialization');
+}
 
 // Rate limiting middleware
 const limiter = rateLimit({
@@ -62,27 +74,35 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Mount all routes
+// Mount all routes with error handling
 console.log('\nRegistering routes...');
-app.use('/api/v1/login', Router1);
-app.use('/api/v1/SignUp', Router2);
-app.use('/api/v1/CalculateResult', Router3);
-app.use('/api/v1/AddNewInterview', Router4);
-app.use('/api/v1/AddNewResult', Router5);
-app.use('/api/v1/SubmitInterview', Router6);
-app.use('/api/v1/ViewProfile', Router7);
-app.use('/api/v1/ViewInterviewList', Router8);
-app.use('/api/v1/ViewInterview', Router9);
-app.use('/api/v1/DetectEmotion', Router10);
-app.use('/api/v1/FindUser', Router11);
-app.use('/api/v1/FindResult', Router12);
-app.use('/api/v1/ToneAnalysis', Router13);
-app.use('/api/v1/Chatbot', Router14);
+try {
+  const { Router1,Router2,Router3,Router4, Router5 ,Router6,Router7,Router8,Router9,Router10,Router11,Router12,Router13,Router14} = require("./Routers/router.config");
+  const otherRoutes = require('./Routes/Other_Routes');
 
-// Mount Other Routes
-console.log('\nMounting Other Routes...');
-app.use('/api/v1', otherRoutes);
-console.log('Other Routes mounted successfully');
+  app.use('/api/v1/login', Router1);
+  app.use('/api/v1/SignUp', Router2);
+  app.use('/api/v1/CalculateResult', Router3);
+  app.use('/api/v1/AddNewInterview', Router4);
+  app.use('/api/v1/AddNewResult', Router5);
+  app.use('/api/v1/SubmitInterview', Router6);
+  app.use('/api/v1/ViewProfile', Router7);
+  app.use('/api/v1/ViewInterviewList', Router8);
+  app.use('/api/v1/ViewInterview', Router9);
+  app.use('/api/v1/DetectEmotion', Router10);
+  app.use('/api/v1/FindUser', Router11);
+  app.use('/api/v1/FindResult', Router12);
+  app.use('/api/v1/ToneAnalysis', Router13);
+  app.use('/api/v1/Chatbot', Router14);
+
+  // Mount Other Routes
+  console.log('\nMounting Other Routes...');
+  app.use('/api/v1', otherRoutes);
+  console.log('Other Routes mounted successfully');
+} catch (error) {
+  console.error('Error loading routes:', error.message);
+  // Continue without routes for now
+}
 
 // Log all registered routes
 console.log('\nRegistered Routes:');
@@ -114,7 +134,7 @@ app.use((Error, req, res, next) => {
   res.status(500).json({
     status: "System Error",
     message: "Unable to fetch your request",
-    Error: Error,
+    Error: Error.message,
   });
 });
 
@@ -130,12 +150,39 @@ try {
   console.log('  Application will continue without background processing');
 }
 
-app.use(Sentry.Handlers.errorHandler());
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
-app.listen(PORT, () => {
+// Start server with error handling
+const server = app.listen(PORT, () => {
   console.log(`\nServer is running on port ${PORT}`);
   console.log('\nAvailable endpoints:');
   console.log('- GET /health');
+  console.log('- GET /test');
   console.log('- POST /api/v1/ViewProfile/update');
   console.log('- GET /api/v1/test');
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  console.error('Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+  });
 });
