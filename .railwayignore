@@ -1,0 +1,17 @@
+# Ignore frontend files for Railway deployment
+client/
+client/**
+*.md
+.git/
+.gitignore
+README.md
+DEPLOYMENT.md
+HUGGING_FACE_SETUP.md
+FIXES.md
+.specstory/
+.cursorindexingignore
+backend.log
+template.png
+package.json
+package-lock.json
+yarn.lock 

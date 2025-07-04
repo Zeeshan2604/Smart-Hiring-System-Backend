@@ -1,25 +1,29 @@
 {
-  "name": "common",
+  "name": "smart-hiring-system",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Smart Hiring System - AI-powered recruitment platform",
+  "main": "backend/index.js",
   "scripts": {
-    "dev": "concurrently \"cd client && npm start\" \"cd backend && npm start\"",
-    "build": "cd client && npm run build",
-    "client": "cd client && npm run serve",
-    "backend": "cd backend && npm start",
-    "start": "npm run backend && npm run client"
+    "start": "cd backend && npm start",
+    "build": "cd backend && npm install",
+    "dev": "cd backend && npm run dev",
+    "install": "cd backend && npm install"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@mui/lab": "^5.0.0-alpha.125",
-    "@mui/material": "^5.11.11",
-    "@mui/x-date-pickers": "^5.0.0",
-    "concurrently": "^7.6.0",
-    "dayjs": "^1.11.13",
-    "path": "^0.12.7",
-    "yarn": "^1.22.22"
-  }
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zeeshan2604/Smart-Hiring-System.git"
+  },
+  "keywords": [
+    "hiring",
+    "ai",
+    "recruitment",
+    "interview",
+    "video-analysis"
+  ],
+  "author": "Smart Hiring Team",
+  "license": "ISC"
 }
