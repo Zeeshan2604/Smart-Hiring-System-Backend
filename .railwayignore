@@ -1,6 +1,4 @@
-# Ignore frontend files for Railway deployment
-client/
-client/**
+# Ignore unnecessary files for Railway deployment
 *.md
 .git/
 .gitignore
