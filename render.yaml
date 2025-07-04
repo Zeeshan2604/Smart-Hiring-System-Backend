@@ -1,4 +1,4 @@
- services:
+services:
   - type: web
     name: smart-hiring-backend
     env: node
@@ -11,21 +11,6 @@
         value: 8080
       - key: REDIS_ENABLED
         value: true
-      - key: REDIS_HOST
-        fromService:
-          type: redis
-          name: smart-hiring-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: redis
-          name: smart-hiring-redis
-          property: port
-      - key: REDIS_PASSWORD
-        fromService:
-          type: redis
-          name: smart-hiring-redis
-          property: password
       - key: MONGOOSE_CONNECTION
         value: mongodb+srv://your-mongodb-connection-string
       - key: HUGGING_FACE_TOKEN
@@ -41,5 +26,4 @@
 
   - type: redis
     name: smart-hiring-redis
-    ipAllowList: []
     plan: free
