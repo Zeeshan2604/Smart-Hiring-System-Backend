@@ -1,28 +1,24 @@
 {
-  "name": "smart-hire-backend",
+  "name": "smart-hiring-backend",
   "version": "1.0.0",
   "description": "Smart Hiring System Backend API",
   "main": "index.js",
   "scripts": {
-    "start": "node start.js",
+    "start": "node index.js",
     "dev": "nodemon index.js",
     "build": "npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AkashLM/smart-hire-backend.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/AkashLM/smart-hire-backend/issues"
-  },
-  "homepage": "https://github.com/AkashLM/smart-hire-backend#readme",
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zeeshan2604/Smart-Hiring-System-Backend.git"
+  },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@sentry/node": "^7.92.0",
     "axios": "^1.4.0",
@@ -44,4 +40,4 @@
   "devDependencies": {
     "nodemon": "^2.0.21"
   }
-}
+} 
