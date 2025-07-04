@@ -20,6 +20,20 @@ const Add_Candidate_Result_Function = async(req, res, next) => {
     Res_confidence_Percentage,
     Res_Overall_Percentage,
   } = req.body;
+
+  // Ensure Performance_Array is always an array of emotion frames
+  let performanceArray = [];
+  if (Array.isArray(Res_Performance_Array)) {
+    performanceArray = Res_Performance_Array;
+  } else if (typeof Res_Performance_Array === 'string') {
+    try {
+      performanceArray = JSON.parse(Res_Performance_Array);
+      if (!Array.isArray(performanceArray)) performanceArray = [];
+    } catch (e) {
+      performanceArray = [];
+    }
+  }
+
   const Add_Interview_Result = await Interview_Result_Model.create({
     Candidate_Name: Res_Candidate_Name,
     Candidate_Email: Res_Candidate_Email,
@@ -34,7 +48,7 @@ const Add_Candidate_Result_Function = async(req, res, next) => {
     //Question bank details
     Question_Arrays: Res_Question_Arrays,
     Answer_Arrays: Res_Answer_Arrays,
-    Performance_Array: Res_Performance_Array,
+    Performance_Array: performanceArray,
     Text_Percentage: Res_Text_Percentage,
     Time_Percentage: Res_Time_Percentage,
     confidence_Percentage: Res_confidence_Percentage,

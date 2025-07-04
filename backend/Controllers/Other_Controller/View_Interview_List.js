@@ -23,4 +23,22 @@ const View_Interview_List_Function = async (req, res, next) => {
   }
 };
 
-module.exports = { View_Interview_List_Function };
+// Fetch all interviews for an organization by Company_Name
+const View_All_Interviews_Function = async (req, res, next) => {
+  const { Company_Name } = req.body;
+  try {
+    const interviews = await Interview_Details_Model.find({ Company_Name });
+    res.status(200).json({
+      status: "Success",
+      message: "All interviews found successfully!",
+      data: interviews,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "Error",
+      message: "Unable to fetch interviews!",
+    });
+  }
+};
+
+module.exports = { View_Interview_List_Function, View_All_Interviews_Function };

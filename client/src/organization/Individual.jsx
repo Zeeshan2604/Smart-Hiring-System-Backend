@@ -7,26 +7,26 @@ function Individual() {
   const uniqueIds = [];
   const [array, setArray] = useState([
     {
-      name: "Hrushi Ambike",
-      email: "hrushi@gmail.com",
+      name: "Zeeshan Shaikh",
+      email: "zeeshan@gmail.com",
       date: "25-11-2022",
       score: "High",
     },
     {
-      name: "Rahat Sayad",
-      email: "hrushi@gmail.com",
+      name: "Afatb Shaikh",
+      email: "aftab@gmail.com",
       date: "25-11-2022",
       score: "Low",
     },
     {
-      name: "Faizan Shaikh",
-      email: "hrushi@gmail.com",
+      name: "Umar Shaikh",
+      email: "umar@gmail.com",
       date: "25-11-2022",
       score: "Medium",
     },
     {
-      name: "Akash  Malekr",
-      email: "hrushi@gmail.com",
+      name: "Mohid Sherikar",
+      email: "mohid@gmail.com",
       date: "25-11-2022",
       score: "High",
     },

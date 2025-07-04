@@ -10,7 +10,7 @@ import LandingPg from "../pages/LandingPg";
 import ChatBot from "../ChatbotComponents/chatbot";
 import ResumeBuilder from "../ResumeBuilder/ResumeBuilder";
 
-function Features() {
+const Features = React.memo(function Features() {
   const [Display, setDisplay] = useState("home");
   const [show, setShow] = useState(false);
   const [status, setStatus] = useState("");
@@ -90,6 +90,6 @@ function Features() {
       )}
     </div>
   );
-}
+});
 
 export default Features;

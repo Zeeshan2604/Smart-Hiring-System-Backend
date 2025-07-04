@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Cookies from "universal-cookie";
 import DateConverter from "../../assets/DateConverter";
-import { Button } from "@mui/material";
+// import { Button } from "@mui/material";
+import { FaBuilding, FaCalendarAlt, FaClock, FaQuestionCircle, FaHourglassHalf, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
-const Card = ({
+const Card = React.memo(({
   organization,
   jobPosition,
   interviewDate,
@@ -17,247 +18,236 @@ const Card = ({
   setItrId,
   visited_Array,
   testEmail,
-
   card,
+  searchTerm,
+  filterStatus
 }) => {
-  const [validIntr, setValidIntr] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // const [validIntr, setValidIntr] = useState(false);
+  const [, setLoading] = useState(true);
+  const [hasAttempted, setHasAttempted] = useState(false);
+  const [attemptScore, setAttemptScore] = useState(null);
+  const [totalAttempts, setTotalAttempts] = useState(0);
+  const BASEURL = process.env.REACT_APP_SAMPLE;
+
   useEffect(() => {
-    const date = new Date(); // create a new Date object with the current date and time
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      timeZoneName: "short",
-    };
-    function convertDateFormat(dateString) {
-      const date = new Date(dateString);
-      const isoDateString = date.toISOString().split("T")[0] + "T00:00:00.000Z";
-      return isoDateString;
-    }
-    setValidIntr(interviewDate >= convertDateFormat(new Date()));
-    console.log("testEmail", interviewDate <= convertDateFormat(new Date()));
-    setLoading(false);
-  });
-  const dFunction = () => {
-    if (visited_Array.includes(testEmail)) {
-      return (
-        <p className="text-gray-700 text-base mb-2">
-          <button
-            variant="contained"
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mr-4"
-          >
-            Attempted
-          </button>
-        </p>
-      );
-    } else {
-      return (
-        <p className="text-gray-700 text-base mb-2">
-          <button
-            variant="contained"
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mr-4"
-            disabled
-          >
-            Expired
-          </button>
-        </p>
-      );
-    }
-  };
+    const cookies = new Cookies();
+    const checkAttempt = async () => {
+      try {
+        const userData = cookies.get("UserData");
+        if (!userData || !userData.emailId) {
+          console.log("User data not found in cookies");
+          return;
+        }
 
-  // const startButton = (validIntr) => {
-  //   if (validIntr === true) {
-  //     console.log(validIntr);
-  //     return (
-  //       <p className="text-gray-700 text-base mb-2">
-  //         <Link to="/interview">
-  //           <button
-  //             variant="contained"
-  //             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
-  //             onClick={() => {
-  //               setItrId(id);
-  //             }}
-  //           >
-  //             Start Interview
-  //           </button>
-  //         </Link>
-  //       </p>
-  //     );
-  //   } else {
-  //     return <>{dFunction()}</>;
-  //   }
-  // };
-
-  // New Section By Hrushikesh
-
-  const [expanded, setExpanded] = useState(false);
-
-  const toggleExpansion = () => {
-    setExpanded(!expanded);
-  };
-
-  const getDescription = () => {
-    if (expanded) {
-      return jobDesc;
-    }
-    return jobDesc.slice(0, 50) + "...";
-  };
-
-  const getReadMoreButton = () => {
-    if (!expanded && jobDesc.length > 50) {
-      return (
+        const response = await axios.post(`${BASEURL}/CheckInterviewAttempt`, {
+          Interview_ID: card.Interview_ID,
+          Candidate_Email: userData.emailId
+        });
         
-          <button
-            className="text-blue-500 font-bold hover:underline focus:outline-none"
-            onClick={toggleExpansion}
-          >
-            Read More
-          </button>
-      );
-    }
-    return null;
-  };
+        if (response.data.hasAttempted) {
+          setHasAttempted(true);
+          setAttemptScore(response.data.attempt.Score);
+          setTotalAttempts(response.data.totalAttempts);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error checking interview attempt:", error);
+        setLoading(false);
+      }
+    };
+    checkAttempt();
+  }, [BASEURL, card.Interview_ID]);
 
-  const formattedInterviewDate = new Date(interviewDate).toLocaleDateString();
-  const formattedInterviewTime = new Date(interviewTime).toLocaleTimeString(
-    [],
-    {
-      hour: "numeric",
-      minute: "numeric",
-      timeZoneName: "short",
-    }
+  // Calculate interview status
+  const now = new Date();
+  const startDate = new Date(interviewDate);
+  // Use the organization-set validity period
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + (card.Validity_Period || 30)); // Fallback to 30 days if not set
+
+  const isUpcoming = startDate > now;
+  const isActive = now >= startDate && now <= endDate;
+  // const isExpired = now > endDate;
+
+  // Filter logic
+  const matchesSearch = 
+    organization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    jobPosition.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    jobDesc.toLowerCase().includes(searchTerm.toLowerCase());
+
+  const shouldShow = matchesSearch && (
+    filterStatus === "all" ||
+    (filterStatus === "upcoming" && isUpcoming) ||
+    (filterStatus === "completed" && hasAttempted)
   );
+
+  if (!shouldShow) return null;
 
   return (
-    <>
-      {loading ? (
-        <>Loading....</>
-      ) : (
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden w-80 mx-4 my-8">
-          <div className="p-4">
-            <h3 className="font-bold text-2xl mb-2 text-gray-900">
-              {organization}
-            </h3>
-            <p className="text-gray-700 text-base mb-2 font-semibold">
+    <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col h-full">
+      <div className="p-6 flex flex-col h-full flex-1 justify-between">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
               {jobPosition}
-            </p>
-            <p className="text-gray-700 text-base mb-4 h-20 overflow-scroll leading-6">
-              <span className="font-bold text-gray-900">Description:</span>{" "}
-              &nbsp;
-              {getDescription()}
-            {console.log("time",interviewTime)}
-
-              {getReadMoreButton()}
-            </p>
-
-            <p className="text-gray-700 text-base mb-2">
-              <span className="font-bold text-gray-900">Interview Date:</span>{" "}
-              &nbsp;
-              {formattedInterviewDate}
-            </p>
-            <p className="text-gray-700 text-base mb-2">
-              <span className="font-bold text-gray-900">Interview Time:</span>{" "}
-              &nbsp;
-              {interviewTime}
-            </p>
-            <p className="text-gray-700 text-base mb-2">
-              <span className="font-bold text-gray-900">
-                Number of Questions:
-              </span>{" "}
-              &nbsp;
-              {qsnNumber}
-            </p>
-            <p className="text-gray-700 text-base mb-2">
-              <span className="font-bold text-gray-900">Duration:</span> &nbsp;
-              {timeDuration} Minutes
-            </p>
-            {/* {startButton(validIntr)} */}
+            </h3>
+            <div className="flex items-center text-gray-600">
+              <FaBuilding className="mr-2 text-blue-500" />
+              <span className="font-medium">{organization}</span>
+            </div>
           </div>
-          <div className="flex justify-center p-4">
-          <Link to="/interview">
-            <Button
-              variant="contained"
-              onClick={() => {
-                setItrId(card.Interview_ID);
-              }}
-            >
-              Give Test
-            </Button>
-        </Link>
-
+          <div className="flex items-center">
+            {hasAttempted ? (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
+                <FaCheckCircle className="mr-1.5" />
+                Completed
+              </span>
+            ) : isUpcoming ? (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                <FaClock className="mr-1.5" />
+                Upcoming
+              </span>
+            ) : isActive ? (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                <FaHourglassHalf className="mr-1.5" />
+                Active
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-200">
+                <FaTimesCircle className="mr-1.5" />
+                Expired
+              </span>
+            )}
           </div>
         </div>
-      )}
-    </>
-  );
-};
 
-const CardList = ({ cards, UserDataData, setItrId }) => {
+        {/* Description */}
+        <p className="text-gray-600 mb-6 line-clamp-2 text-sm">
+          {jobDesc}
+        </p>
+
+        {/* Interview Details */}
+        <div className="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-xl">
+          <div className="flex items-center text-gray-600">
+            <FaCalendarAlt className="mr-2 text-blue-500" />
+            <span className="text-sm">Start: {DateConverter(interviewDate, "Date")}</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <FaClock className="mr-2 text-blue-500" />
+            <span className="text-sm">{interviewTime}</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <FaQuestionCircle className="mr-2 text-blue-500" />
+            <span className="text-sm">{qsnNumber} Questions</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <FaHourglassHalf className="mr-2 text-blue-500" />
+            <span className="text-sm">Valid until: {DateConverter(endDate.toISOString(), "Date")}</span>
+          </div>
+        </div>
+
+        {/* Score and Attempts */}
+        {hasAttempted && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-6 border border-blue-100">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-500">Latest Score</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {attemptScore?.toFixed(1)}%
+                </p>
+              </div>
+              {totalAttempts > 1 && (
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Total Attempts</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {totalAttempts}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Action Button */}
+        {(isUpcoming || isActive) && (
+          <Link to="/interview" className="block">
+            <button
+              onClick={() => setItrId(card.Interview_ID)}
+              className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
+                hasAttempted
+                  ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+              }`}
+            >
+              {hasAttempted ? "Retake Interview" : "Start Interview"}
+            </button>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+});
+
+const CardList = React.memo(({ cards, UserDataData, setItrId, searchTerm, filterStatus }) => {
   const [testEmail, setTestEmail] = useState("");
   const [IntrList, setIntrList] = useState([]);
   const BASEURL = process.env.REACT_APP_SAMPLE;
-  const cookies = new Cookies();
-  const [loading, setLoading] = useState(true);
 
-  const findInterviewList = async () => {
-    const viewData = await axios
+  const findInterviewList = useCallback(async () => {
+    await axios
       .post(`${BASEURL}/ViewInterviewList`, {
         Res_Interviewer_Email: testEmail,
       })
       .then((Data) => {
         setIntrList(Data.data.data1);
-        setLoading(false);
       })
       .catch((ErrorR) => {
         console.log("kkkkk", ErrorR);
       });
-  };
+  }, [BASEURL, testEmail]);
+
   useEffect(() => {
+    
     setTestEmail(UserDataData.emailId);
     findInterviewList();
-    if (IntrList[0] && testEmail) {
-      setLoading(false);
-    }
-  }, [loading]);
+  }, [BASEURL, UserDataData.emailId, findInterviewList]);
+
+  // Memoize the mapped Card components for performance
+  const cardComponents = useMemo(() => IntrList.map((card, index) => (
+    <Card
+      key={index}
+      organization={card.Company_Name}
+      jobPosition={card.Name_Technology}
+      jobDesc={card.Description}
+      interviewDate={card.Date_Of_Interview}
+      interviewTime={card.Time_Of_Interview}
+      qsnNumber={card.Number_Of_Questions}
+      timeDuration={card.Time_Duration}
+      setItrId={setItrId}
+      card={card}
+      searchTerm={searchTerm}
+      filterStatus={filterStatus}
+    />
+  )), [IntrList, setItrId, searchTerm, filterStatus]);
+
+  if (IntrList.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-400 mb-4">
+          <FaBuilding className="mx-auto text-6xl" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No Interviews Found</h3>
+        <p className="text-gray-500">There are no interviews available at the moment.</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {loading ? (
-        <>Loading</>
-      ) : (
-        <>
-          {" "}
-          <div className="flex flex-wrap justify-center">
-            {IntrList.map((card, index) => (
-              <div key={index}>
-                <div
-                  key={card.organization}
-                  className="transform hover:scale-110 transition-all duration-500"
-                >
-                  <Card
-                    organization={card.Company_Name}
-                    jobPosition={card.Name_Technology}
-                    jobDesc={card.Description}
-                    interviewDate={card.Date_Of_Interview}
-                    interviewTime={card.Time_Of_Interview}
-                    qsnNumber={card.Number_Of_Questions}
-                    timeDuration={card.Time_Duration}
-                    setItrId={setItrId}
-                    card={card}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {cardComponents}
+    </div>
   );
-};
+});
 
 export default CardList;

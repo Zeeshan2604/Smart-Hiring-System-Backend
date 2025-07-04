@@ -12,15 +12,23 @@ import axios from "axios";
 import Cookies from "universal-cookie";
 import InterviewList from "../Student/pages/InterviewList";
 import Result from "../Student/pages/Result";
+import AllResults from "../Student/pages/AllResults";
+import ChatBot from "../ChatbotComponents/chatbot";
+import ResumeBuilder from "../ResumeBuilder/ResumeBuilder";
+import SearchCandidate from "../organization/pages/SearchCandidate";
+import OrganizationCandidateResult from "../organization/pages/ResultsList/OrganizationCandidateResult";
+import AllInterviews from "../organization/pages/AllInterviews";
+import InterviewDetailsOrg from "../organization/pages/InterviewDetailsOrg";
 
-function WithLogin({ status, setStatus, setIsLoggedIn }) {
+const WithLogin = React.memo(function WithLogin({ status, setStatus, setIsLoggedIn }) {
   const [ItrId, setItrId] = useState(0);
-
+  const [showNavbar, setShowNavbar] = useState(true);
   const [UserDataData, setUserData] = useState({});
   const BASEURL = process.env.REACT_APP_SAMPLE;
   const cookies = new Cookies();
 
   const UserTypeFunction = async () => {
+    console.log("cookies", cookies.get("SmartToken"))
     const UserData = await axios.post(
       `${BASEURL}/FindUser`,
       {},
@@ -51,7 +59,11 @@ function WithLogin({ status, setStatus, setIsLoggedIn }) {
           <div>
             {status === "org" ? (
               <>
-                <SidebarOrg setIsLoggedIn={setIsLoggedIn} />
+                <SidebarOrg 
+                  setIsLoggedIn={setIsLoggedIn} 
+                  name={UserDataData?.Name || UserDataData?.name || "Organization"}
+                  photoUrl={UserDataData?.Photo || UserDataData?.photo || ""}
+                />
                 <Routes>
                   <Route
                     path="/"
@@ -70,6 +82,10 @@ function WithLogin({ status, setStatus, setIsLoggedIn }) {
                     element={<NewInterview UserDataData={UserDataData} />}
                   />
                   <Route
+                    path="/all-interviews"
+                    element={<AllInterviews UserDataData={UserDataData} />}
+                  />
+                  <Route
                     path="/addstudents"
                     element={<AddStudent UserDataData={UserDataData} />}
                   />
@@ -77,12 +93,34 @@ function WithLogin({ status, setStatus, setIsLoggedIn }) {
                     path="/viewresults"
                     element={<Results UserDataData={UserDataData} />}
                   />
+                  <Route
+                    path="/viewresult"
+                    element={<Result UserDataData={UserDataData} />}
+                  />
+                  <Route
+                    path="/viewresult/:resultId"
+                    element={<OrganizationCandidateResult UserDataData={UserDataData} />}
+                  />
+                  <Route
+                    path="/search-candidate"
+                    element={<SearchCandidate UserDataData={UserDataData} />}
+                  />
+                  <Route
+                    path="/interview-details/:id"
+                    element={<InterviewDetailsOrg UserDataData={UserDataData} />}
+                  />
                   <Route path="*" element={<h1>404 Not Found</h1>} />
                 </Routes>
               </>
             ) : status === "student" ? (
               <>
-                <SidebarStudent setIsLoggedIn={setIsLoggedIn} />
+                {showNavbar && (
+                  <SidebarStudent 
+                    setIsLoggedIn={setIsLoggedIn} 
+                    name={UserDataData?.Name || UserDataData?.name || "Candidate"}
+                    photoUrl={UserDataData?.Photo || UserDataData?.photo || ""}
+                  />
+                )}
                 <Routes>
                   <Route
                     path="/"
@@ -99,6 +137,7 @@ function WithLogin({ status, setStatus, setIsLoggedIn }) {
                         UserDataData={UserDataData}
                         ItrId={ItrId}
                         setItrId={setItrId}
+                        onInterviewStart={(isStarting) => setShowNavbar(!isStarting)}
                       />
                     }
                   />
@@ -115,6 +154,18 @@ function WithLogin({ status, setStatus, setIsLoggedIn }) {
                     path="/viewresult"
                     element={<Result UserDataData={UserDataData} />}
                   />
+                  <Route
+                    path="/allresults"
+                    element={<AllResults />}
+                  />
+                  <Route
+                    path="/chat"
+                    element={<ChatBot />}
+                  />
+                  <Route
+                    path="/resume/*"
+                    element={<ResumeBuilder />}
+                  />
                   <Route path="*" element={<h1>404 Not Found</h1>} />
                 </Routes>
               </>
@@ -126,6 +177,6 @@ function WithLogin({ status, setStatus, setIsLoggedIn }) {
       )}
     </>
   );
-}
+});
 
 export default WithLogin;

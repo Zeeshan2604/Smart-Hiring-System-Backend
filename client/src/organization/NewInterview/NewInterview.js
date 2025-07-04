@@ -1,442 +1,378 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, FieldArray } from "formik";
-import { useState } from "react";
 import axios from "axios";
-import Cookies from "universal-cookie";
-import { Button } from "@mui/material";
+// import Cookies from "universal-cookie";
+import { FiUser, FiCalendar, FiClock, FiList, FiCheckCircle, FiAlertCircle, FiPlus, FiMinus, FiBookOpen, FiUsers } from "react-icons/fi";
+import { useSnackbar } from "../../Snackbar/Snackbar";
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { FaExclamationCircle } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 function NewInterview({ UserDataData }) {
   const BASEURL = process.env.REACT_APP_SAMPLE;
-  const cookies = new Cookies();
-  const [initialValues, setInitialValues] = useState({});
-  console.log("Hru", initialValues);
-  const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState({});
+  // const cookies = new Cookies();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState(null);
+  const [candidateList, setCandidateList] = useState([]);
+  const [fetchingCandidates, setFetchingCandidates] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [modalSelected, setModalSelected] = useState([]);
+  const { showSnackbar } = useSnackbar();
 
-  function generateRandomNumber() {
-    const min = 100000; // minimum value
-    const max = 999999; // maximum value
-    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-    return randomNumber;
-  }
-;
-  const createNewInterview = async () => {
-    console.log("wewewe");
-    const Temp = await axios
-      .post(`${BASEURL}/AddNewInterview`, {
-        Res_Company_Name: userData.Name,
-        Res_Description: initialValues.technologyName,
-        Res_HR_Name: initialValues.hrName,
-        Res_Instruction: initialValues.instructionD,
-        Res_Name_Technology: initialValues.descriptionD,
-        Res_Interview_ID: generateRandomNumber(),
-        Res_Number_Of_Questions: initialValues.noQuestions,
-        Res_Time_Duration: initialValues.interviewDuration,
-        Res_Time_Of_Interview: (initialValues.interviewTime).toString(),
-        Res_Date_Of_Interview: initialValues.interviewDate,
-        Res_Question_Arrays:  initialValues.questions,
-        Res_Answer_Arrays: initialValues.answers,
-        Res_Email_Arrays: initialValues.emails,
-      })
-      .then((Data) => {
-        console.log("Data--->",Data)
-        if (Data.data.message === "Interview added successfully !") {
-          alert("Interview created successfully !");
-        }
-      })
-      .catch((ErrorR) => {
-        console.log("kkkkk", ErrorR);
-      });
-
-  };
-
+  // Fetch all candidates for this organization
   useEffect(() => {
-    setUserData(UserDataData);
-    if (userData) {
-      setLoading(false);
-      console.log(userData);
+    const fetchCandidates = async () => {
+      setFetchingCandidates(true);
+      try {
+        const orgName = UserDataData?.Name;
+        const response = await axios.get(`${BASEURL}/getCandidates`, {
+          params: { OrganizationName: orgName },
+        });
+        if (response.data.status === "Success") {
+          setCandidateList(response.data.data);
+        } else {
+          setCandidateList([]);
+        }
+      } catch (err) {
+        setCandidateList([]);
+      } finally {
+        setFetchingCandidates(false);
+      }
+  };
+    if (UserDataData?.Name) {
+      fetchCandidates();
     }
-  }, [loading]);
+  }, [UserDataData, BASEURL]);
+
   const initialVal = {
-    descriptionD:"",
-    instructionD:"",
     technologyName: "",
-    hrName:"",
+    descriptionD: "",
+    instructionD: "",
+    hrName: "",
     noQuestions: 0,
     interviewDate: "",
     interviewTime: "",
     interviewDuration: 0,
+    validityPeriod: 30,
     questions: [],
     answers: [],
-    noStudents: 0,
-    emails: [],
+    emails: [], // Will be filled by selected candidates
   };
 
-  const handleSubmitInterview =()=> {
-    createNewInterview();
+  function generateRandomNumber() {
+    return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+  }
+
+  const createNewInterview = async (values, resetForm) => {
+    setLoading(true);
+    setSuccess(null);
+    setError(null);
+    try {
+      const response = await axios.post(`${BASEURL}/AddNewInterview`, {
+        Res_Company_Name: UserDataData?.Name,
+        Res_Description: values.technologyName,
+        Res_HR_Name: values.hrName,
+        Res_Instruction: values.instructionD,
+        Res_Name_Technology: values.descriptionD,
+        Res_Interview_ID: generateRandomNumber(),
+        Res_Number_Of_Questions: values.noQuestions,
+        Res_Time_Duration: values.interviewDuration,
+        Res_Time_Of_Interview: values.interviewTime?.toString(),
+        Res_Date_Of_Interview: values.interviewDate,
+        Res_Validity_Period: values.validityPeriod,
+        Res_Question_Arrays: values.questions,
+        Res_Answer_Arrays: values.answers,
+        Res_Email_Arrays: values.emails,
+      });
+      if (response.data.message === "Interview added successfully !") {
+        setSuccess("Interview created successfully!");
+        showSnackbar("Interview created successfully!", "success");
+        resetForm();
+      } else {
+        setError("Failed to create interview.");
+        showSnackbar("Failed to create interview.", "error");
+      }
+    } catch (err) {
+      setError("An error occurred while creating the interview.");
+      showSnackbar("An error occurred while creating the interview.", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <>
-      {loading ? (
-        <>Loading</>
-      ) : (
-        <>
-          {" "}
-          <div className="py-4 flex">
-            <div className="flex w-2/4 mx-auto">
-              <div className="max-w-2xl mx-auto px-4  ">
-                <div className="flex justify-between items-center mx-auto">
-                  <h1 className="text-2xl font-bold text-gray-800 ">
-                    New Interview
-                  </h1>
-                  <div className="text-right">
-                    <button className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">
-                      Save
-                    </button>
-                    <button className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 ml-2">
-                      Cancel
-                    </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-10 px-2 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col items-center mb-12">
+          <div className="flex items-center gap-4 mb-2">
+            <FiBookOpen className="text-blue-700 text-5xl drop-shadow" />
+            <h1 className="text-5xl font-extrabold text-blue-700 tracking-tight drop-shadow">New Interview</h1>
                   </div>
+          <p className="text-blue-700/70 text-lg text-center max-w-2xl">Fill in the form below to schedule a new interview. All fields are required.</p>
                 </div>
-                <div className="my-4">
-                  <p className="text-gray-600">
-                    Fill in the form below to schedule a new interview.
-                  </p>
-                </div>
-              </div>
-            </div>
+        {/* Main Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-10 flex flex-col border-l-8 border-blue-600 relative overflow-hidden">
+          <div className="absolute -top-8 left-8 opacity-10 text-[8rem] pointer-events-none select-none">
+            <FiBookOpen />
           </div>
-          <div className="py-6">
-            <div className="max-w-2xl mx-auto px-4">
-              <div className="bg-white shadow-md rounded-md p-4">
-                <h2 className="text-xl font-bold mb-4">Interview Details</h2>
                 <Formik
                   initialValues={initialVal}
-                  validate={(values) => {
+            validate={values => {
                     const errors = {};
-                    if (values.questions.length !== values.noQuestions) {
-                      errors.questions = `Please enter ${values.noQuestions} questions`;
-                    }
-                    if (values.answers.length !== values.noQuestions) {
-                      errors.answers = `Please enter ${values.noQuestions} answers`;
-                    }
-                    if (values.emails.length !== values.noStudents) {
-                      errors.emails = `Please enter ${values.noStudents} Emails`;
-                    }
+              if (!values.technologyName) errors.technologyName = "Required";
+              if (!values.descriptionD) errors.descriptionD = "Required";
+              if (!values.instructionD) errors.instructionD = "Required";
+              if (!values.hrName) errors.hrName = "Required";
+              if (!values.interviewDate) errors.interviewDate = "Required";
+              if (!values.interviewTime) errors.interviewTime = "Required";
+              if (!values.interviewDuration || values.interviewDuration <= 0) errors.interviewDuration = "Enter a valid duration";
+              if (!values.noQuestions || values.noQuestions <= 0) errors.noQuestions = "Enter at least 1 question";
+              if (values.questions.length !== values.noQuestions) errors.questions = `Please enter ${values.noQuestions} questions`;
+              if (values.answers.length !== values.noQuestions) errors.answers = `Please enter ${values.noQuestions} answers`;
+              if (!values.emails || values.emails.length === 0) errors.emails = "Select at least one candidate";
+              if (!values.validityPeriod || values.validityPeriod < 1) errors.validityPeriod = "Enter a valid period";
                     return errors;
                   }}
-                  onSubmit={()=>{createNewInterview();}}
+            onSubmit={(values, { resetForm }) => createNewInterview(values, resetForm)}
                 >
-                  {({ values, setFieldValue, errors }) => (
-                    <Form>
-                      <div className="mb-4">
-                        <label
-                          htmlFor="technologyName"
-                          className="block text-gray-700 font-bold mb-2"
-                        >
-                          Technology Name
+            {({ values, setFieldValue, errors, touched }) => (
+              <Form className="z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 dark:text-blue-200 mb-1">
+                      <FiList /> Technology Name
+                      <span className="relative group">
+                        <InformationCircleIcon className="w-4 h-4 text-blue-400 inline-block group-hover:text-blue-600" />
+                        <span className="absolute left-6 top-0 z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 shadow-lg">Enter the technology or subject for this interview.</span>
+                      </span>
+                    </label>
+                    <Field name="technologyName" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.technologyName && touched.technologyName && (
+                      <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <FaExclamationCircle className="text-red-400" />{errors.technologyName}
+                      </motion.div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                      <FiBookOpen /> Detailed Description
                         </label>
-                        <Field
-                          type="text"
-                          id="technologyName"
-                          name="technologyName"
-                          placeholder="Enter technology name"
-                          required
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                        />
+                    <Field name="descriptionD" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.descriptionD && touched.descriptionD && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.descriptionD}</div>}
                       </div>
-                      <div className="mb-4">
-                        <label
-                          htmlFor="descriptionD"
-                          className="block text-gray-700 font-bold mb-2"
-                        >
-                         Detailed Description
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                      <FiAlertCircle /> Instructions
                         </label>
-                        <Field
-                          type="text"
-                          id="descriptionD"
-                          name="descriptionD"
-                          placeholder="Enter the Descrition about Interview !"
-                          required
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                        />
+                    <Field name="instructionD" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.instructionD && touched.instructionD && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.instructionD}</div>}
                       </div>
-                      <div className="mb-4">
-                        <label
-                          htmlFor="instructionD"
-                          className="block text-gray-700 font-bold mb-2"
-                        >
-                          Instruction for Interview 
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                      <FiUser /> HR Name
                         </label>
-                        <Field
-                          type="text"
-                          id="instructionD"
-                          name="instructionD"
-                          placeholder="Enter the Instructions / warnings !"
-                          required
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                        />
+                    <Field name="hrName" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.hrName && touched.hrName && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.hrName}</div>}
                       </div>
-                      <div className="mb-4">
-                        <label
-                          htmlFor="interviewDate"
-                          className="block text-gray-700 font-bold mb-2"
-                        >
-                          Interview Date
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                      <FiCalendar /> Interview Date
                         </label>
-                        <Field
-                          type="date"
-                          id="interviewDate"
-                          name="interviewDate"
-                          placeholder="Enter interview date"
-                          required
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                        />
+                    <Field type="date" name="interviewDate" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.interviewDate && touched.interviewDate && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.interviewDate}</div>}
                       </div>
-
-                      <div className="mb-4">
-                        <label
-                          htmlFor="interviewTime"
-                          className="block text-gray-700 font-bold mb-2"
-                        >
-                          Interview Time
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                      <FiClock /> Interview Time
                         </label>
-                        <Field
-                          type="time"
-                          id="interviewTime"
-                          name="interviewTime"
-                          placeholder="Enter interview time"
-                          required
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                        />
+                    <Field type="time" name="interviewTime" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.interviewTime && touched.interviewTime && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.interviewTime}</div>}
                       </div>
-                      <div className="mb-4">
-                        <label
-                          htmlFor="interviewDuration"
-                          className="block text-gray-700 font-bold mb-2"
-                        >
-                          Interview Duration (minutes)
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                      <FiClock /> Duration (minutes)
                         </label>
-                        <Field
-                          type="number"
-                          id="interviewDuration"
-                          name="interviewDuration"
-                          placeholder="Enter interview duration in minutes"
-                          required
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                        />
+                    <Field type="number" name="interviewDuration" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.interviewDuration && touched.interviewDuration && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.interviewDuration}</div>}
                       </div>
-                      <div className="mb-4">
-                        <label
-                          htmlFor="noQuestions"
-                          className="block text-gray-700 font-bold mb-2"
-                        >
-                          Number of Questions
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                      <FiCheckCircle /> Validity Period (days)
                         </label>
-                        <Field
-                          type="number"
-                          id="noQuestions"
-                          name="noQuestions"
-                          placeholder="Enter number of questions"
-                          required
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                        />
+                    <Field type="number" name="validityPeriod" min="1" max="365" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.validityPeriod && touched.validityPeriod && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.validityPeriod}</div>}
                       </div>
-
-                      <div className="mb-4">
-                        <div className="border-2 border-black p-5">
-                          <label
-                            htmlFor="questions"
-                            className="block text-gray-700 font-bold mb-2"
-                          >
-                            Questions
+                  <div>
+                    <label className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+                      <FiList /> Number of Questions
                           </label>
-
+                    <Field type="number" name="noQuestions" className="w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-gray-900" />
+                    {errors.noQuestions && touched.noQuestions && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.noQuestions}</div>}
+                  </div>
+                </div>
+                {/* Questions Section */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FiList className="text-blue-700" />
+                    <h2 className="text-xl font-bold text-blue-700">Questions</h2>
+                  </div>
                           <FieldArray name="questions">
                             {({ push, remove }) => (
-                              <>
-                                {values.questions?.map((q, index) => (
-                                  <div key={index} className="mb-2">
-                                    <Field
-                                      name={`questions.${index}`}
-                                      placeholder={`Enter question.${
-                                        index + 1
-                                      }`}
-                                      className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                                    />
-                                    <Button
-                                      variant="contained"
-                                      color="error"
-                                      className=" text-white font-bold py-2 px-4 rounded"
-                                      type="button"
-                                      onClick={() => remove(index)}
-                                    >
-                                      Remove
-                                    </Button>
+                      <div>
+                        {values.questions.map((q, idx) => (
+                          <div key={idx} className="flex items-center gap-2 mb-2">
+                            <Field name={`questions.${idx}`} placeholder={`Question ${idx + 1}`} className="flex-1 px-4 py-2 border-2 border-blue-600 rounded-lg bg-blue-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+                            <button type="button" onClick={() => remove(idx)} className="p-2 rounded-full bg-red-100 hover:bg-red-200 transition-colors" aria-label="Remove question">
+                              <FiMinus className="text-red-600" />
+                            </button>
                                   </div>
                                 ))}
-                                {errors.questions && (
-                                  <div className="text-red-600">
-                                    {errors.questions}
+                        {values.questions.length < values.noQuestions && (
+                          <button type="button" onClick={() => push("")} className="flex items-center gap-2 px-4 py-2 mt-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg shadow transition-colors">
+                            <FiPlus /> Add Question
+                          </button>
+                        )}
+                        {errors.questions && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.questions}</div>}
                                   </div>
-                                )}
-                                {values.questions?.length <
-                                  values.noQuestions && (
-                                  <Button
-                                    variant="contained"
-                                    className=" text-white font-bold py-2 px-4 rounded"
-                                    type="button"
-                                    onClick={() => push("")}
-                                  >
-                                    Add Question
-                                  </Button>
-                                )}
-                              </>
                             )}
                           </FieldArray>
                         </div>
+                {/* Answers Section */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FiList className="text-blue-700" />
+                    <h2 className="text-xl font-bold text-blue-700">Answers</h2>
                       </div>
-
-                      <div className="mb-4">
-                        <div className="border-2 border-black p-5">
-                          <label
-                            htmlFor="answers"
-                            className="block text-gray-700 font-bold mb-2"
-                          >
-                            Answers
-                          </label>
-
                           <FieldArray name="answers">
                             {({ push, remove }) => (
-                              <>
-                                {values.answers?.map((a, index) => (
-                                  <div key={index} className="mb-2">
-                                    <Field
-                                      name={`answers.${index}`}
-                                      placeholder={`Enter Answer.${index + 1}`}
-                                      className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                                    />
-                                    <Button
-                                      variant="contained"
-                                      color="error"
-                                      className=" text-white font-bold py-2 px-4 rounded"
-                                      type="button"
-                                      onClick={() => remove(index)}
-                                    >
-                                      Remove
-                                    </Button>
+                      <div>
+                        {values.answers.map((a, idx) => (
+                          <div key={idx} className="flex items-center gap-2 mb-2">
+                            <Field name={`answers.${idx}`} placeholder={`Answer ${idx + 1}`} className="flex-1 px-4 py-2 border-2 border-blue-600 rounded-lg bg-blue-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+                            <button type="button" onClick={() => remove(idx)} className="p-2 rounded-full bg-red-100 hover:bg-red-200 transition-colors" aria-label="Remove answer">
+                              <FiMinus className="text-red-600" />
+                            </button>
                                   </div>
                                 ))}
-                                {errors.answers && (
-                                  <div className="text-red-600">
-                                    {errors.answers}
+                        {values.answers.length < values.noQuestions && (
+                          <button type="button" onClick={() => push("")} className="flex items-center gap-2 px-4 py-2 mt-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg shadow transition-colors">
+                            <FiPlus /> Add Answer
+                          </button>
+                        )}
+                        {errors.answers && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.answers}</div>}
                                   </div>
-                                )}
-                                {values.answers.length < values.noQuestions && (
-                                  <Button
-                                    variant="contained"
-                                    className=" text-white font-bold py-2 px-4 rounded"
-                                    type="button"
-                                    onClick={() => push("")}
-                                  >
-                                    Add Answer
-                                  </Button>
-                                )}
-                              </>
                             )}
                           </FieldArray>
                         </div>
+                {/* Candidate Selection Section */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FiUsers className="text-blue-700" />
+                    <h2 className="text-xl font-bold text-blue-700">Candidate Emails</h2>
                       </div>
-                      <div className="mb-4">
-                        <label
-                          htmlFor="noStudents"
-                          className="block text-gray-700 font-bold mb-2"
+                  <button
+                    type="button"
+                    className="px-6 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-semibold shadow mb-4"
+                    onClick={() => {
+                      setModalSelected(values.emails);
+                      setShowModal(true);
+                    }}
+                  >
+                    Add candidates
+                  </button>
+                  {/* Show selected candidates */}
+                  {values.emails.length > 0 && (
+                    <div className="mt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FiUsers className="text-blue-700" />
+                        <h2 className="text-lg font-bold text-blue-700">Selected Candidates</h2>
+                      </div>
+                      <ul className="list-disc pl-6">
+                        {values.emails.map(email => {
+                          const candidate = candidateList.find(c => c.emailId === email);
+                          return (
+                            <li key={email} className="text-blue-700 font-medium">
+                              {candidate ? `${candidate.Name} (${candidate.emailId})` : email}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                                  </div>
+                                )}
+                  {errors.emails && touched.emails && <div className="text-red-500 text-xs mt-1 flex items-center gap-1"><FiAlertCircle />{errors.emails}</div>}
+                </div>
+                {/* Modal for candidate selection */}
+                {showModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full relative">
+                      <h3 className="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2"><FiUsers /> Select Candidates</h3>
+                      {fetchingCandidates ? (
+                        <div className="text-blue-600">Loading candidates...</div>
+                      ) : candidateList.length === 0 ? (
+                        <div className="text-gray-500">No candidates found. Please add candidates first.</div>
+                      ) : (
+                        <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
+                          {candidateList.map((candidate) => (
+                            <label key={candidate._id} className="flex items-center gap-3 bg-blue-50 rounded-lg px-4 py-2 cursor-pointer border border-blue-200 hover:bg-blue-100">
+                              <input
+                                type="checkbox"
+                                checked={modalSelected.includes(candidate.emailId)}
+                                onChange={e => {
+                                  if (e.target.checked) {
+                                    setModalSelected(prev => [...prev, candidate.emailId]);
+                                  } else {
+                                    setModalSelected(prev => prev.filter(email => email !== candidate.emailId));
+                                  }
+                                }}
+                              />
+                              <span className="font-medium text-blue-700">{candidate.Name}</span>
+                              <span className="text-gray-500 text-sm">({candidate.emailId})</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex justify-end gap-2 mt-4">
+                        <button
+                          type="button"
+                          className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold"
+                          onClick={() => setShowModal(false)}
                         >
-                          Number of Candidates
-                        </label>
-                        <Field
-                          type="number"
-                          id="noStudents"
-                          name="noStudents"
-                          placeholder="Enter number of Candidates"
-                          required
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                        />
-                      </div>
-
-                      <div className="mb-4">
-                        <div className="border-2 border-black p-5">
-                          <label
-                            htmlFor="emails"
-                            className="block text-gray-700 font-bold mb-2"
-                          >
-                            Emails
-                          </label>
-
-                          <FieldArray name="emails">
-                            {({ push, remove }) => (
-                              <>
-                                {values.emails?.map((q, index) => (
-                                  <div key={index} className="mb-2">
-                                    <Field
-                                      name={`emails.${index}`}
-                                      placeholder={`Enter email-${index + 1}`}
-                                      className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:border-blue-600"
-                                    />
-                                    <Button
-                                      variant="contained"
-                                      color="error"
-                                      className=" text-white font-bold py-2 px-4 rounded"
-                                      type="button"
-                                      onClick={() => remove(index)}
-                                    >
-                                      Remove
-                                    </Button>
-                                  </div>
-                                ))}
-                                {errors.emails && (
-                                  <div className="text-red-600">
-                                    {errors.emails}
-                                  </div>
-                                )}
-                                {values.emails?.length < values.noStudents && (
-                                  <Button
-                                    variant="contained"
-                                    className=" text-white font-bold py-2 px-4 rounded"
-                                    type="button"
-                                    onClick={() => push("")}
-                                  >
-                                    Add Email
-                                  </Button>
-                                )}
-                              </>
-                            )}
-                          </FieldArray>
-                        </div>
-                      </div>
-
-                      <div className="mt-8">
-                        <Button
-                          variant="contained"
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="px-6 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-semibold"
                           onClick={() => {
-                            setInitialValues(values);
+                            setFieldValue("emails", modalSelected);
+                            setShowModal(false);
                           }}
-                          type="submit"
-                          className=" text-white font-bold py-2 px-4 rounded"
                         >
-                          Save Interview
-                        </Button>
+                          OK
+                        </button>
                       </div>
+                    </div>
+                  </div>
+                )}
+                {/* Submit Button */}
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-8 py-4 rounded-full shadow-xl transition-colors duration-200 font-bold text-xl"
+                    disabled={loading}
+                  >
+                    <FiCheckCircle /> {loading ? "Creating..." : "Create Interview"}
+                  </button>
+                </div>
+                {success && <div className="mt-4 text-green-600 font-semibold flex items-center gap-2"><FiCheckCircle /> {success}</div>}
+                {error && <div className="mt-4 text-red-600 font-semibold flex items-center gap-2"><FiAlertCircle /> {error}</div>}
                     </Form>
                   )}
                 </Formik>
               </div>
             </div>
           </div>
-        </>
-      )}
-    </>
   );
 }
 

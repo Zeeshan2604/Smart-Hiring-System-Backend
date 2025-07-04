@@ -1,6 +1,6 @@
-const AWS = require('aws-sdk');
+const { RekognitionClient, DetectFacesCommand } = require("@aws-sdk/client-rekognition");
 
-const Emotion_Detection_Function = (req, res, next) => {
+const Emotion_Detection_Function = async (req, res, next) => {
   const { Res_Image_Link } = req.body;
   const encodedData = Res_Image_Link.split(",")[1];
   const byteCharacters = atob(encodedData);
@@ -11,20 +11,21 @@ const Emotion_Detection_Function = (req, res, next) => {
   const byteArray = new Uint8Array(byteNumbers);
   const blob = new Blob([byteArray], { type: "image/jpeg" });
   const imageUrl = URL.createObjectURL(blob);
+  
   try {
     // Set up AWS credentials
     const accessKeyId = process.env.accessKeyId;
     const secretAccessKey = process.env.secretAccessKey;
     const region = process.env.region;
-    // Configure the AWS SDK
-    AWS.config.update({
-      accessKeyId: accessKeyId,
-      secretAccessKey: secretAccessKey,
+    
+    // Create a new Rekognition client using AWS SDK v3
+    const rekognitionClient = new RekognitionClient({
       region: region,
+      credentials: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey,
+      },
     });
-
-    // Create a new Rekognition instance
-    const rekognition = new AWS.Rekognition();
 
     // Set up the parameters for the emotion detection request
     const params = {
@@ -35,25 +36,24 @@ const Emotion_Detection_Function = (req, res, next) => {
     };
 
     // Call the detectFaces method to perform the emotion detection
-    rekognition.detectFaces(params, (err, data) => {
-      if (err) {
-        res.status(500).json({
-          status: "Error",
-          message: err,
-        });
-      } else {
-        res.status(200).json({
-          status: "Success",
-          message: "Result found successfully !",
-          ImageResult: JSON.stringify(data, null, 2),
-        });
-        //   console.log(JSON.stringify(data, null, 2));
-      }
+    const command = new DetectFacesCommand(params);
+    const data = await rekognitionClient.send(command);
+    
+    res.status(200).json({
+      status: "Success",
+      message: "Result found successfully !",
+      ImageResult: JSON.stringify(data, null, 2),
     });
+    //   console.log(JSON.stringify(data, null, 2));
   } catch (Error) {
     console.log(Error);
+    res.status(500).json({
+      status: "Error",
+      message: Error.message,
+    });
   }
 };
+
 module.exports = {
   Emotion_Detection_Function,
 };

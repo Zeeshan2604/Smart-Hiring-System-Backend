@@ -12,6 +12,7 @@ const Router10= express.Router();
 const Router11= express.Router();
 const Router12= express.Router();
 const Router13= express.Router();
+const Router14 = express.Router();
 
 
 const {
@@ -34,12 +35,16 @@ const {
 } = require("../Controllers/Other_Controller/Add_New_Interview");
 const {Get_Video_Recording_Function} =require("../Controllers/Other_Controller/Get_Video_Recording");
 const {ViewProfile} = require("../Controllers/Other_Controller/ViewProfile");
+const {UpdateStudentProfile} = require("../Controllers/Other_Controller/UpdateStudentProfile");
 const {View_Interview_List_Function} = require("../Controllers/Other_Controller/View_Interview_List");
 const {View_New_Interview_Function} = require("../Controllers/Other_Controller/View_New_Interview");
 const {Emotion_Detection_Function} = require("../Controllers/Other_Controller/EmotionResult");
 const {Tone_Analaysis} = require("../Controllers/Other_Controller/ToneAnalysis");
 const{GetUserFunction} = require("../Controllers/Common_Controller/GetUserFunction");
 const {View_Candidate_Result_Function} = require("../Controllers/Other_Controller/View_Candidate_Result");
+const {ChatbotController} = require("../Controllers/Other_Controller/ChatbotController");
+const { SaveResume, GetResume } = require("../Controllers/Other_Controller/ResumeController");
+
 Router1.route("/").post(LoginFunction, TokenGenerator_Middleware);
 Router2.route("/").post(SignUpFunction, TokenGenerator_Middleware);
 Router3.route("/").post(
@@ -56,6 +61,7 @@ Router6.route("/").post(
 Router7.route("/").post(
   ViewProfile
 );
+Router7.route("/update").post(UpdateStudentProfile);
 Router8.route("/").post(
   View_Interview_List_Function
 );
@@ -74,6 +80,18 @@ Router12.route("/").post(
 Router13.route("/").post(
   Tone_Analaysis
 );
+Router14.route("/").post(
+  ChatbotController
+);
+
+// Debug route
+Router7.get("/test", (req, res) => {
+  res.json({ message: "Profile routes are working" });
+});
+
+Router1.post("/saveResume", SaveResume);
+Router1.post("/getResume", GetResume);
+
 module.exports = {
   Router1,
   Router2,
@@ -88,4 +106,5 @@ module.exports = {
   Router11,
   Router12,
   Router13,
+  Router14,
 };

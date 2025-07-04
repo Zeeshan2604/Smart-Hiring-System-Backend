@@ -4,7 +4,6 @@ import "react-html5-camera-photo/build/css/index.css";
 
 function TakeSnapFunction({imageTrigger,setImageTrigger}) {
   const cameraRef = useRef(null);
-  let flag = false;
   const [imgURI, setImgUri] = useState("");
   function handleTakePhoto(dataUri) {
     setTimeout(() => {

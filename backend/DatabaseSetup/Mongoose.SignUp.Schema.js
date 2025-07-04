@@ -100,6 +100,7 @@ const SignUp_Schema = new mongoose.Schema({
     type: String,
   },
 });
+
 //Pre-SaveMiddleware for Password Encryption
 SignUp_Schema.pre("save", async function(){
   this.Password= await bcrypt.hash(this.Password, 12);
@@ -107,6 +108,10 @@ SignUp_Schema.pre("save", async function(){
 
 //Model for SignUp Testing
 const SignUp_Model = mongoose.model("SignUp_Model_DB", SignUp_Schema);
+
+SignUp_Schema.index({ emailId: 1 });
+SignUp_Schema.index({ Name: 1 });
+
 module.exports = {
   SignUp_Model, 
 };

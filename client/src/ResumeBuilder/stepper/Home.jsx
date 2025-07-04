@@ -133,75 +133,61 @@ const steps = [
   { num: 3, label: "Education" },
 ];
 
-export default function Home(props) {
-  const {
-    basicinfo,
-    setBasicInfo,
-    workinfo,
-    setWorkInfo,
-    eduinfo,
-    setEduInfo,
-    setResume,
-    picture,
-    setpicture,
-  } = props;
+const Home = ({ basicinfo, workinfo, eduinfo, setBasicInfo, setWorkInfo, setEduInfo, setResume, picture, setpicture }) => {
   const [activeStep, setActiveStep] = useState(0);
+
+  const handleNext = (data) => {
+    console.log('Home handleNext called, activeStep:', activeStep, 'data:', data);
+    if (activeStep === 0) {
+      setBasicInfo(data);
+      setActiveStep(1);
+    } else if (activeStep === 1) {
+      setWorkInfo(data);
+      setActiveStep(2);
+    } else if (activeStep === 2) {
+      setEduInfo(data);
+      console.log('Setting resume true in Home');
+      setResume(true);
+    }
+  };
+
   const getStepperPage = () => {
     switch (activeStep) {
+      case 0:
+        return (
+          <BasicInfo1
+            basicinfo={basicinfo}
+            onNext={handleNext}
+            picture={picture}
+            setpicture={setpicture}
+          />
+        );
       case 1:
         return (
           <WorkExp
-            steps={steps}
-            activeStep={activeStep}
-            setActiveStep={setActiveStep}
             workinfo={workinfo}
-            setWorkInfo={setWorkInfo}
+            onNext={handleNext}
+            onBack={() => setActiveStep(0)}
           />
         );
       case 2:
         return (
           <Education
-            steps={steps}
-            activeStep={activeStep}
-            setActiveStep={setActiveStep}
             eduinfo={eduinfo}
-            setEduInfo={setEduInfo}
-            setResume={setResume}
+            onNext={handleNext}
+            onBack={() => setActiveStep(1)}
           />
         );
-
       default:
-        return (
-          <BasicInfo1
-            steps={steps}
-            activeStep={activeStep}
-            setActiveStep={setActiveStep}
-            setBasicInfo={setBasicInfo}
-            basicinfo={basicinfo}
-            picture={picture}
-            setpicture={setpicture}
-          />
-        );
+        return null;
     }
   };
+
   return (
-    <div className=" p-3 overflow-hidden ">
-      <Stack sx={{ width: "100%" }} spacing={4}>
-        <Stepper
-          alternativeLabel
-          activeStep={activeStep}
-          connector={<QontoConnector />}
-        >
-          {steps.map((label) => (
-            <Step key={label.label}>
-              <StepLabel StepIconComponent={ColorlibStepIcon}>
-                {label.label}
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+    <div className="w-full">
         {getStepperPage()}
-      </Stack>
     </div>
   );
-}
+};
+
+export default Home;

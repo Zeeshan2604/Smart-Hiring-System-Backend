@@ -1,234 +1,117 @@
 import React from "react";
-import { Form, Formik, Field, FieldArray } from "formik";
-import { FaPlus } from "react-icons/fa";
+import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import { educationschema } from "../schema/schema";
-import { Button } from "@mui/material";
 
-const Education = ({
-  activeStep,
-  setActiveStep,
-  eduinfo,
-  setEduInfo,
-  setResume,
-}) => {
-  const onSubmit = () => {
-    // setActiveStep(0);
-    setResume(true);
-  };
+const initialLabels = [
+  "10th (Secondary)",
+  "12th/Diploma (Senior Secondary)",
+  "Graduate (Degree)",
+  "Post Graduate (Optional)"
+];
+
+const Education = ({ eduinfo, onNext, onBack }) => {
+  // Ensure at least 3 required entries
+  const initialEducation = eduinfo.education && eduinfo.education.length >= 3
+    ? eduinfo.education
+    : [
+        { name: "", collage: "", percentage: "", start: "", end: "" },
+        { name: "", collage: "", percentage: "", start: "", end: "" },
+        { name: "", collage: "", percentage: "", start: "", end: "" }
+      ];
   return (
-    // <div>
-    <div className="flex  justify-center text-center mb-6">
-      <Formik
-        initialValues={eduinfo}
-        onSubmit={onSubmit}
-        validationSchema={educationschema}
-      >
-        {(props) => (
-          <Form className="flex flex-col justify-center text-center align-middle border-2 rounded-lg border-gray-400 w-1/2 p-2">
-            <div className="flex flex-col">
-              <div className="flex flex-col justify-start mb-6">
-                <label className="flex justify-start pl-1">Title:</label>
-                <Field
-                  type="text"
-                  label="Name"
-                  name="title"
-                  placeholder="Basic Information"
-                  className=" p-3 m-1   rounded border-2 "
-                />
-                {props.errors.title ? (
-                  <p className="  text-red-600">{props.errors.title}</p>
-                ) : null}
-              </div>
-              <div className="">
-                <h1> Add Multiple Education</h1>
-                <FieldArray
-                  name="education"
-                  render={(arrayhelpers) => {
-                    return (
-                      <div>
-                        {props.values?.education[0] &&
-                          props.values.education?.map((item, index) => {
-                            return (
-                              <div
-                                className="mt-2  border-solid shadow-2xl mb-5 rounded-lg "
-                                key={index}
-                              >
-                                {index > 0 && (
-                                  <div>
-                                    <button
-                                      type="button"
-                                      className="float-right text-xl "
-                                      onClick={() => arrayhelpers.remove(index)}
-                                    >
-                                      ❌
-                                    </button>
-                                  </div>
-                                )}
-                                <div className="p-5">
-                                  <div className="flex justify-start  italic w-fit p-1 text-slate-400   ">{`Education ${
-                                    index + 1
-                                  }`}</div>
-                                  <div className="card-body p-2">
-                                    <div className="flex flex-col justify-start">
-                                      <label
-                                        className="flex justify-start pl-1"
-                                        htmlFor={`education.${index}.name`}
-                                      >
-                                        Name:
-                                      </label>
-
-                                      <Field
-                                        name={`education.${index}.name`}
-                                        className=" p-2 m-1   rounded border-2 "
-                                        type="text"
-                                        placeholder="Name eg: B-Tech"
-                                      />
-
-                                      {props.errors.name &&
-                                      props.touched.name ? (
-                                        <p className=" text-red-600">
-                                          {props.errors.name}
-                                        </p>
-                                      ) : null}
-                                    </div>
-
-                                    {/* Position and Company name below  */}
-                                    {/* Position and Company name below  */}
-                                    {/* Position and Company name below  */}
-
-                                    <div className="flex justify-between ">
-                                      <div className=" flex-col  w-1/2  flex">
-                                        <label
-                                          className="flex justify-start pl-1"
-                                          htmlFor={`education.${index}.collage`}
-                                        >
-                                          Collage/School Name:
-                                        </label>
-
-                                        <Field
-                                          name={`education.${index}.collage`}
-                                          className=" p-2 m-1   rounded border-2 "
-                                          type="text"
-                                          placeholder="Collage/School Name"
-                                        />
-                                      </div>
-
-                                      <div className="w-1/2 flex flex-col">
-                                        <label
-                                          className="flex justify-start pl-1"
-                                          htmlFor={`education.${index}.percentage`}
-                                        >
-                                          Percentage:
-                                        </label>
-
-                                        <Field
-                                          name={`education.${index}.percentage`}
-                                          className=" p-2 m-1   rounded border-2 "
-                                          type="text"
-                                          placeholder="Pecentage %"
-                                        />
-                                      </div>
-                                    </div>
-
-                                    {/* Start date and end date below  */}
-                                    {/* Start date and end date below  */}
-                                    {/* Start date and end date below  */}
-                                    {/* Start date and end date below  */}
-
-                                    <div className="flex justify-between ">
-                                      <div className=" flex-col  w-1/2  flex">
-                                        <label
-                                          className="flex justify-start pl-1"
-                                          htmlFor={`education.${index}.start`}
-                                        >
-                                          Start date:
-                                        </label>
-
-                                        <Field
-                                          name={`education.${index}.start`}
-                                          className=" p-2 m-1   rounded border-2 "
-                                          type="date"
-                                          placeholder="Date"
-                                        />
-                                      </div>
-
-                                      <div className="w-1/2 flex flex-col">
-                                        <label
-                                          className="flex justify-start pl-1"
-                                          htmlFor={`education.${index}.end`}
-                                        >
-                                          End Date:
-                                        </label>
-
-                                        <Field
-                                          name={`education.${index}.end`}
-                                          className=" p-2 m-1   rounded border-2 "
-                                          type="date"
-                                          placeholder="End date"
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        <button
-                          type="button"
-                          className="float-right flex   text-blue-600 p-1 italic rounded-xl"
-                          onClick={() => {
-                            arrayhelpers.insert(
-                              props.values.education.length + 1,
-                              {
-                                name: "",
-                                collage: "",
-                                percentage: "",
-                                start: "",
-                                end: "",
-                              }
-                            );
-                          }}
-                        >
-                          <div className="p-1 ">
-                            <FaPlus />
+    <div className="flex justify-center items-center w-full min-h-full py-8 bg-gradient-to-br from-blue-50 to-white">
+      <div className="w-full max-w-2xl mx-auto px-4">
+        <Formik
+          initialValues={{ education: initialEducation }}
+          validationSchema={educationschema}
+          onSubmit={values => {
+            console.log('Education form onSubmit called with:', values);
+            onNext(values);
+          }}
+        >
+          {({ values, handleSubmit, setFieldValue }) => (
+            <Form onSubmit={handleSubmit} className="flex flex-col justify-center text-center align-middle border-2 rounded-2xl border-blue-200 w-full p-8 bg-white shadow-2xl">
+              <h2 className="text-2xl font-bold text-blue-700 mb-6">Education Details</h2>
+              <FieldArray name="education">
+                {({ push, remove }) => (
+                  <>
+                    {Array.from({ length: Math.max(values.education.length, 3) }).map((_, idx) => (
+                      <div key={idx} className={`mb-8 rounded-xl border-2 ${idx < 3 ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-gray-50'} shadow-sm p-4 relative`}> 
+                        <div className="absolute -top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow">
+                          {initialLabels[idx] || `Education ${idx + 1}`}
+                          {idx < 3 && <span className="ml-2 text-red-400">*</span>}
+                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mb-2">
+                        <div>
+                            <label className="block text-left font-medium text-gray-700 mb-1">Degree/Exam</label>
+                            <Field name={`education[${idx}].name`} className="px-3 py-2 rounded-md outline-none border border-gray-300 w-full" placeholder="e.g. B.Tech, 12th, 10th" />
+                            <ErrorMessage name={`education[${idx}].name`} component="div" className="text-red-500 text-xs text-left" />
                           </div>
-                          New
-                        </button>
-                      </div>
-                    );
-                  }}
-                />
-                <br />
-              </div>
-            </div>
-            <div className="flex justify-around">
-              <Button
-                variant="contained"
-                type="button"
-                className="bg-gray-600 text-white rounded p-2 w-fit m-2 pr-3 disabled:opacity-50"
-                onClick={() => setActiveStep((step) => step - 1)}
-                disabled={activeStep === 0}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                type="submit"
-                onClick={() => {
-                  setEduInfo(props.values);
-                }}
-                className="bg-blue-600 text-white rounded p-2 w-fit m-2 pr-3"
-              >
-                Finish
-              </Button>
-            </div>
-
-            {}
-          </Form>
-        )}
-      </Formik>
+                                    <div>
+                            <label className="block text-left font-medium text-gray-700 mb-1">College/School</label>
+                            <Field name={`education[${idx}].collage`} className="px-3 py-2 rounded-md outline-none border border-gray-300 w-full" placeholder="e.g. ABC School/College" />
+                            <ErrorMessage name={`education[${idx}].collage`} component="div" className="text-red-500 text-xs text-left" />
+                                    </div>
+                          <div>
+                            <label className="block text-left font-medium text-gray-700 mb-1">Percentage/CGPA</label>
+                            <Field name={`education[${idx}].percentage`} className="px-3 py-2 rounded-md outline-none border border-gray-300 w-full" placeholder="e.g. 85% or 8.5 CGPA" />
+                            <ErrorMessage name={`education[${idx}].percentage`} component="div" className="text-red-500 text-xs text-left" />
+                                      </div>
+                          <div>
+                            <label className="block text-left font-medium text-gray-700 mb-1">Start Date</label>
+                            <Field name={`education[${idx}].start`} type="month" className="px-3 py-2 rounded-md outline-none border border-gray-300 w-full" />
+                            <ErrorMessage name={`education[${idx}].start`} component="div" className="text-red-500 text-xs text-left" />
+                                        </div>
+                          <div>
+                            <label className="block text-left font-medium text-gray-700 mb-1">End Date</label>
+                            <Field name={`education[${idx}].end`} type="month" className="px-3 py-2 rounded-md outline-none border border-gray-300 w-full" />
+                            <ErrorMessage name={`education[${idx}].end`} component="div" className="text-red-500 text-xs text-left" />
+                                        </div>
+                                      </div>
+                        {idx >= 3 && (
+                          <div className="flex justify-end mt-2">
+                            <button
+                              type="button"
+                              className="text-red-600 hover:underline text-sm"
+                              onClick={() => remove(idx)}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                        </div>
+                    ))}
+                    <div className="flex justify-between mt-4">
+                      <button
+                        type="button"
+                        className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+                        onClick={onBack}
+                  >
+                    Back
+                      </button>
+                      <button
+                        type="button"
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        onClick={() => push({ name: "", collage: "", percentage: "", start: "", end: "" })}
+                        disabled={values.education.length >= 4}
+                      >
+                        Add Education
+                      </button>
+                      <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Finish
+                      </button>
+                </div>
+                  </>
+                )}
+              </FieldArray>
+            </Form>
+          )}
+        </Formik>
+      </div>
     </div>
-    // </div>
   );
 };
 

@@ -1,10 +1,12 @@
 {
   "name": "smart-hire-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Smart Hiring System Backend API",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,17 +19,30 @@
     "url": "https://github.com/AkashLM/smart-hire-backend/issues"
   },
   "homepage": "https://github.com/AkashLM/smart-hire-backend#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "dependencies": {
-    "aws-sdk": "^2.1371.0",
+    "@aws-sdk/client-rekognition": "^3.450.0",
+    "@sentry/node": "^7.92.0",
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
+    "bullmq": "^5.56.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.5.1",
+    "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.0.0",
+    "mongoose": "^7.8.7",
     "natural": "^6.3.0",
+    "nodemailer": "^7.0.4",
+    "pm2": "^6.0.8",
+    "redis": "^5.5.6"
+  },
+  "devDependencies": {
     "nodemon": "^2.0.21"
   }
 }

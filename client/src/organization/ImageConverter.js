@@ -1,10 +1,7 @@
 // const cloudinary = require("cloudinary").v2;
 import axios from "axios";
-import Cookies from "universal-cookie";
 
 const base64ToHttps = (dataURI) => {
-  const BASEURL = process.env.REACT_APP_SAMPLE;
-  const cookies = new Cookies();  
 
   let URLEnd;
 
@@ -24,19 +21,6 @@ const base64ToHttps = (dataURI) => {
         api_secret: apiSecret,
       });
       const fetchInterview = async () => {
-        const viewData = await axios
-          .post(`${BASEURL}/DetectEmotion`, {
-            imageUrl: response.data.secure_url,
-          })
-          .then((Data) => {
-            let OriginalStorage =JSON.parse((localStorage.getItem("AWSResult")));
-            console.log("------>",OriginalStorage);
-            let finalStorage=[...OriginalStorage,Data.data.result[0]];
-            localStorage.setItem("AWSResult", JSON.stringify(finalStorage));
-          })
-          .catch((ErrorR) => {
-            console.log("kkkkk", ErrorR);
-          });
       };
       fetchInterview();
       return response.data.secure_url;

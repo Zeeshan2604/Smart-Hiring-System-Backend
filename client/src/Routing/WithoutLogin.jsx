@@ -13,9 +13,10 @@ import Contact from "../pages/Contact";
 const WithoutLogin = (Props) => {
   const {
     setIsLoggedIn,
-
     setStatus,
     status,
+    refresher,
+    setRefresher,
   } = Props;
 
   return (
@@ -26,17 +27,17 @@ const WithoutLogin = (Props) => {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/getstarted" element={<LandingPg />} />
         <Route path="/chat" element={<ChatBot />} />
-        <Route path="/resume" element={<ResumeBuilder />} />
+        <Route path="/resume/*" element={<ResumeBuilder />} />
         <Route path="/user" element={<Decide setStatus={setStatus} />} />
         <Route
           path="/org-login"
-          element={<Login status={status} setIsLoggedIn={setIsLoggedIn} />}
+          element={<Login status={status} setIsLoggedIn={setIsLoggedIn} refresher={refresher} setRefresher={setRefresher} />}
         />
         <Route
           path="/student-login"
-          element={<Login status={status} setIsLoggedIn={setIsLoggedIn} />}
+          element={<Login status={status} setIsLoggedIn={setIsLoggedIn} refresher={refresher} setRefresher={setRefresher} />}
         />
-        {console.log("Hrushiii", status)}
+        {console.log("No Login", status)}
         <Route
           path="/signup"
           element={

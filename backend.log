@@ -1,0 +1,50 @@
+
+Registering routes...
+
+Mounting Other Routes...
+Other Routes mounted successfully
+
+Registered Routes:
+OPTIONS *
+GET /health
+POST api\/v1\/login/
+POST api\/v1\/login/saveResume
+POST api\/v1\/login/getResume
+POST api\/v1\/SignUp/
+POST api\/v1\/CalculateResult/
+POST api\/v1\/AddNewInterview/
+POST api\/v1\/AddNewResult/
+POST api\/v1\/SubmitInterview/
+POST api\/v1\/ViewProfile/
+POST api\/v1\/ViewProfile/update
+GET api\/v1\/ViewProfile/test
+POST api\/v1\/ViewInterviewList/
+POST api\/v1\/ViewInterview/
+POST api\/v1\/DetectEmotion/
+POST api\/v1\/FindUser/
+POST api\/v1\/FindResult/
+POST api\/v1\/ToneAnalysis/
+POST api\/v1\/Chatbot/
+POST api\/v1/addCandidate
+GET api\/v1/getCandidates
+GET api\/v1/getCandidateByEmail
+POST api\/v1/AddInterviewAttempt
+POST api\/v1/GetCandidateAttempts
+POST api\/v1/CheckInterviewAttempt
+POST api\/v1/GetCandidateResults
+POST api\/v1/ViewProfile/update
+GET api\/v1/test
+
+Server is running on port 8080
+
+Available endpoints:
+- GET /health
+- POST /api/v1/ViewProfile/update
+- GET /api/v1/test
+(node:10636) NOTE: We are formalizing our plans to enter AWS SDK for JavaScript (v2) into maintenance mode in 2023.
+
+Please migrate your code to use AWS SDK for JavaScript (v3).
+For more information, check the migration guide at https://a.co/7PzMCcy
+(Use `node --trace-warnings ...` to show where the warning was created)
+Database connection established
+^C

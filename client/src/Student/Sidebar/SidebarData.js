@@ -2,12 +2,14 @@ import React from "react";
 import * as BsIcons from "react-icons/bs";
 import * as MdIcons from "react-icons/md";
 import * as RxIcons from "react-icons/rx";
+import * as FaIcons from "react-icons/fa";
+import * as HiIcons from "react-icons/hi";
 
 export const SidebarData = [
   {
     title: "Profile",
     path: "/profile",
-    icon: <RxIcons.RxCalendar />,
+    icon: <MdIcons.MdAccountCircle />,
     cName: "nav-text",
   },
   // {
@@ -19,14 +21,14 @@ export const SidebarData = [
   {
     title: "Interviews List",
     path: "/interviewList",
-    icon: <RxIcons.RxCalendar />,
+    icon: <MdIcons.MdListAlt />,
     cName: "nav-text",
   },
 
   {
     title: "Result",
     path: "/viewresult",
-    icon: <MdIcons.MdOutlineAssignmentLate />,
+    icon: <MdIcons.MdAssessment />,
     cName: "nav-text",
   },
   // {
@@ -53,4 +55,16 @@ export const SidebarData = [
   //   icon: <TbIcons.TbMessageShare />,
   //   cName: 'nav-text'
   // }
+  {
+    title: "Resume Builder",
+    path: "/resume",
+    icon: <FaIcons.FaFileAlt />,
+    cName: "nav-text",
+  },
+  {
+    title: "Chat Assistant",
+    path: "/chat",
+    icon: <HiIcons.HiChatAlt2 />,
+    cName: "nav-text",
+  }
 ];

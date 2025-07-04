@@ -51,10 +51,13 @@ const Interview_Result_Schema = new mongoose.Schema({
   Overall_Percentage: {
     type: Number,
   },
-});
+}, { timestamps: true });
 
 //Model for SignUp Testing
 const Interview_Result_Model = mongoose.model("Interview_Result_Model_DB", Interview_Result_Schema);
+
+Interview_Result_Schema.index({ Candidate_Email: 1, Interview_ID: 1, Company_Name: 1 });
+
 module.exports = {
   Interview_Result_Model, 
 };

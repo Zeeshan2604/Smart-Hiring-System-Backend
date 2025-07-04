@@ -31,13 +31,31 @@ export const basicinfoschema = Yup.object({
 // Work Experience Schema
 
 export const workexpschema = Yup.object({
-  title: Yup.string().required("Please fill this field"),
-
-  skip: Yup.string().required("Please select one"),
+  work: Yup.array().of(
+    Yup.object().shape({
+      position: Yup.string().required('Position is required'),
+      company: Yup.string().required('Company is required'),
+      certificate: Yup.string().url('Certificate must be a valid URL').nullable(),
+      location: Yup.string().required('Location is required'),
+      start: Yup.string().required('Start date is required'),
+      end: Yup.string().required('End date is required'),
+      description: Yup.string().required('Description is required'),
+    })
+  ),
 });
 
 // Education Schema
 
 export const educationschema = Yup.object({
-  title: Yup.string().required("Please fill this field"),
+  education: Yup.array()
+    .of(
+      Yup.object().shape({
+        name: Yup.string().required('Degree/Exam is required'),
+        collage: Yup.string().required('College/School is required'),
+        percentage: Yup.string().required('Percentage/CGPA is required'),
+        start: Yup.string().required('Start date is required'),
+        end: Yup.string().required('End date is required'),
+      })
+    )
+    .min(3, 'At least 3 education entries are required'),
 });

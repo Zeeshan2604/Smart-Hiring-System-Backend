@@ -1,82 +1,39 @@
 import React from "react";
-import template from "./template.png";
+import { FaArrowLeft } from 'react-icons/fa';
 
-function Templates({ setTemNo }) {
+function Templates({ setTemNo, setStep }) {
   return (
-    <div>
-      <div className=" p-5 flex justify-center flex-col text-center pt-16">
-        <div className="flex justify-center font-semibold italic text-2xl mb-5">
-          Choose Your Template!!
-        </div>
-        <div className="grid lg:grid-cols-4 lg:gap-5  justify-center  sm:gap-2 sm:grid-cols-2">
+    <div className="relative min-h-[100vh]">
+      <button
+        className="absolute top-6 left-6 z-10 bg-white rounded-full p-2 shadow hover:bg-gray-100"
+        onClick={() => (typeof setStep === 'function' ? setStep(false) : window.history.back())}
+        title="Back"
+      >
+        <FaArrowLeft size={20} />
+      </button>
+      <div className="p-5 flex justify-center flex-col text-center pt-16">
+        <div className="text-2xl font-semibold mb-8">Choose Your Resume Template</div>
+        <div className="grid lg:grid-cols-2 lg:gap-5 justify-center sm:gap-2 sm:grid-cols-2">
           <button
-            to="/template1"
-            onClick={() => {
-              setTemNo(1);
-            }}
+            onClick={() => setTemNo(1)}
+            className="bg-white rounded-lg shadow-md border border-gray-200 p-2 hover:shadow-lg transition-all flex flex-col items-center"
           >
             <span className="font-bold p-2">Template 1</span>
-            <img
-              src={template}
-              alt="img"
-              height="400"
-              width="400"
-              className=" hover:opacity-60 border-1 border-black"
-            />
+            <div className="w-[210px] h-[297px] flex items-center justify-center overflow-hidden pointer-events-none select-none bg-gray-50 border border-gray-200">
+              <img src="/t2.PNG" alt="Template 1 Preview" className="w-full h-full object-contain" />
+            </div>
           </button>
           <button
-            to="/template2"
-            onClick={() => {
-              setTemNo(2);
-            }}
-            className="h-80"
+            onClick={() => setTemNo(2)}
+            className="bg-white rounded-lg shadow-md border border-gray-200 p-2 hover:shadow-lg transition-all flex flex-col items-center"
           >
             <span className="font-bold p-2">Template 2</span>
-
-            <img
-              src={template}
-              alt="img"
-              height="400"
-              width="400"
-              className=" hover:opacity-60 object-fill"
-            />
-          </button>
-          <button
-            to="/template1"
-            onClick={() => {
-              setTemNo(3);
-            }}
-          >
-            <span className="font-bold p-2">Template 3</span>
-
-            <img
-              src={template}
-              alt="img"
-              height="400"
-              width="400"
-              className=" hover:opacity-60"
-            />
-          </button>
-          <button
-            to="/template2"
-            onClick={() => {
-              setTemNo(4);
-            }}
-            className="h-80"
-          >
-            <span className="font-bold p-2">Template 4</span>
-
-            <img
-              src={template}
-              alt="img"
-              height="400"
-              width="400"
-              className=" hover:opacity-60 object-fill"
-            />
+            <div className="w-[210px] h-[297px] flex items-center justify-center overflow-hidden pointer-events-none select-none bg-gray-50 border border-gray-200">
+              <img src="/t1.PNG" alt="Template 2 Preview" className="w-full h-full object-contain" />
+            </div>
           </button>
         </div>
       </div>
-      {/* <img src={template} alt="img" /> */}
     </div>
   );
 }

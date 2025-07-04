@@ -200,3 +200,12 @@
 .logout-button:hover {
 	background-color: var(--primary);
 }
+
+@media (min-width: 1440px) {
+  .side-nav-container {
+    width: 340px;
+  }
+  .side-nav-container-NX {
+    width: 110px;
+  }
+}

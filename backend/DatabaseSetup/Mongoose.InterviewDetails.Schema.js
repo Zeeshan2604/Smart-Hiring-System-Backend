@@ -22,6 +22,7 @@ const Interview_Details_Schema = new mongoose.Schema({
   },
   Number_Of_Questions: {
     type: Number,
+    min: 0,
   },
   Time_Duration: {
     type: Number,
@@ -31,6 +32,10 @@ const Interview_Details_Schema = new mongoose.Schema({
   },
   Date_Of_Interview: {
     type: Date,
+  },
+  Validity_Period: {
+    type: Number,  // Number of days the interview remains active
+    default: 30    // Default to 30 days if not specified
   },
   //Question bank details
   Question_Arrays: {

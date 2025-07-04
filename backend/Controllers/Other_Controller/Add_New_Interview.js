@@ -17,6 +17,15 @@ const Add_New_Interview = async (req, res, next) => {
     Res_Answer_Arrays,
     Res_Email_Arrays
   } = req.body;
+
+  // Validation: Number of Questions must be >= 0
+  if (typeof Res_Number_Of_Questions !== 'number' || Res_Number_Of_Questions < 0) {
+    return res.status(400).json({
+      status: "Error",
+      message: "Number of Questions must be 0 or greater."
+    });
+  }
+
   try {
     const Add_Interview_Result = await Interview_Details_Model.create({
       Company_Name: Res_Company_Name,

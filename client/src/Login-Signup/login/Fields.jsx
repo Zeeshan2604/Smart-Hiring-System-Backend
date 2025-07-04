@@ -1,90 +1,100 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import Arrow from "./images/arrow.png";
-import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaArrowLeft, FaArrowRight, FaEnvelope, FaLock } from "react-icons/fa";
 import { Formik, Form, Field } from "formik";
 import axios from "axios";
 import Cookies from "universal-cookie";
-import { Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import Snackbar from "@mui/material/Snackbar"; //for snackbar
-import { RxCross2 } from "react-icons/rx"; //for snackbar
-function Fields(props) {
-  const [typeOfUser, setTypeOfUser] = useState("");
-  const [loading, setLoading] = useState(true);
+import Snackbar from "@mui/material/Snackbar";
+import { RxCross2 } from "react-icons/rx";
+import { motion } from "framer-motion";
+
+const Fields = React.memo(function Fields(props) {
   const {
     setIsLoggedIn,
     refresher,
     setRefresher,
-
     status,
-    // setCandidateLog,
-    // setOrganizationLog,
   } = props;
-  const [Error, setError] = useState("");
+  const [error, setError] = useState("");
   const cookies = new Cookies();
-
-  // useEffect(() => {
-  //   if (OrganizationLog === true) {
-  //     setTypeOfUser("Company");
-  //     setLoading(false);
-  //   } else if (candidateLog === true) {
-  //     setTypeOfUser("Candidate");
-  //     setLoading(false);
-  //   }
-  // }, [loading]);
+  const navigate = useNavigate();
+  const BASEURL = process.env.REACT_APP_SAMPLE || "http://localhost:8080/api/v1";
 
   const onsubmit = () => {
     OnClickLogin();
   };
 
-  // for Snackbar
   const [open, setOpen] = useState(false);
-  const [snackbarMsg, setSnackbarMsg] = useState();
-  const [snackbarClass, setSnackbarClass] = useState();
+  const [snackbarMsg, setSnackbarMsg] = useState("");
+  const [snackbarClass, setSnackbarClass] = useState("");
   const handleClose = () => {
-      setOpen(false);
+    setOpen(false);
   };
 
   const action = (
-      <button onClick={handleClose}>
-          <RxCross2 />
-      </button>
+    <button onClick={handleClose}>
+      <RxCross2 />
+    </button>
   );
-  const navigate = useNavigate();
-  const BASEURL = process.env.REACT_APP_SAMPLE;
-  //Login Api
+
   const OnClickLogin = async () => {
-    console.log("initialValues", initialValues);
     setOpen(true);
     setSnackbarMsg("Please Wait ...");
     setSnackbarClass("default");
-    const Temp = await axios
-      .post(`${BASEURL}/login`, {
+    
+    try {
+      // Log only the email for debugging, never the password
+      console.log("Attempting login for:", initialValues.name);
+      
+      const response = await axios.post(`${BASEURL}/login`, {
         Res_EmailId: initialValues.name,
         Res_Password: initialValues.password,
         Res_TypeOfUser: status,
-      })
-      .then((Data) => {
-        if (Data) {
-          cookies.set("SmartToken", Data.data.data, { maxAge: 86400 });
-          navigate("/");
-          setIsLoggedIn(true);
-          sessionStorage.setItem('isLoggedIn', 'true');
-          setSnackbarClass("valid");
-          setOpen(true);
-          setSnackbarMsg("Log in successfully");
-          setRefresher(!refresher);
-          console.log(refresher);
-        }
-      })
-      .catch((ErrorR) => {
-        setSnackbarClass("invalid");
-        setOpen(true);
-        setError(ErrorR?.response?.data?.message);
-        setSnackbarMsg(ErrorR?.response?.data?.message);
-        console.log("kkkkk", ErrorR);
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 10000, // 10 second timeout
       });
+      
+      if (response?.data?.data) {
+        cookies.set("SmartToken", response.data.data, { maxAge: 86400 });
+        cookies.set("UserData", {
+          emailId: initialValues.name,
+          typeOfUser: status
+        }, { maxAge: 86400 });
+
+        navigate("/");
+        setIsLoggedIn(true);
+        sessionStorage.setItem('isLoggedIn', 'true');
+        setSnackbarClass("valid");
+        setOpen(true);
+        setSnackbarMsg("Login successful");
+        setRefresher(!refresher);
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (error) {
+      setSnackbarClass("invalid");
+      setOpen(true);
+      
+      // Handle different types of errors
+      if (error.code === 'ERR_NETWORK') {
+        setSnackbarMsg("Unable to connect to server. Please check your internet connection.");
+      } else if (error.response) {
+        // Server responded with an error
+        setSnackbarMsg(error.response.data?.message || "Invalid credentials");
+      } else if (error.request) {
+        // Request was made but no response received
+        setSnackbarMsg("Server is not responding. Please try again later.");
+      } else {
+        // Other errors
+        setSnackbarMsg("An unexpected error occurred. Please try again.");
+      }
+      
+      setError(error?.response?.data?.message || "An error occurred");
+      console.error("Login error:", error.message);
+    }
   };
 
   const [initialValues, setInitialvalues] = useState({
@@ -93,11 +103,11 @@ function Fields(props) {
   });
 
   return (
-    <>
-      {/* {loading ? (
-        <div> Loading </div>
-      ) : (
-        <> */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <Formik
         initialValues={initialValues}
         onSubmit={() => {
@@ -105,107 +115,99 @@ function Fields(props) {
         }}
       >
         {(props) => (
-          <Form>
-            <div className="flex pl-5">
-              <img src={Arrow} alt="img" height="100" width="100"></img>
-              &nbsp; &nbsp; &nbsp;{" "}
-              <Link to="/user">
-                <Button
-                  variant="contained"
-                  type="but"
-                  className=" h-12  inline-block py-2 px-4 text-white font-bold rounded-md bg-blue-500 hover:bg-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110"
-                >
-                  <div className="p-1">
-                    <FaArrowLeft />
-                  </div>
-                  Back
-                </Button>
+          <Form className="space-y-6">
+            <div className="flex items-center mb-8">
+              <Link to="/user" className="text-blue-600 hover:text-blue-700 transition-colors">
+                <FaArrowLeft className="text-xl" />
               </Link>
+              <h1 className="text-3xl font-bold text-gray-900 ml-4">
+                Welcome Back
+              </h1>
             </div>
-            <div className="pl-10">
-              <div>
-                <div className="flex p-2 login font-bold text-4xl ml-24">
-                  Log{" "}
-                  <div className=" pl-2">
-                    <div className="p-0">in</div>
 
-                    <div className="text-xs font-medium p-0">{status}</div>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaEnvelope className="text-gray-400" />
                   </div>
+                  <Field
+                    type="email"
+                    name="name"
+                    placeholder="Enter your email"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaLock className="text-gray-400" />
+                  </div>
+                  <Field
+                    type="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
                 </div>
               </div>
             </div>
-            <div className="ml-24">
-              <div className="p-5 pl-0">
-                <Field
-                  type="text"
-                  label="Name"
-                  name="name"
-                  placeholder="Name"
-                  className="p-3 w-80 font-mono text-sm login outline-none rounded-md shadow"
-                />
-              </div>
-              <div className="p-5 pl-0">
-                <Field
-                  type="password"
-                  label="password"
-                  name="password"
-                  placeholder="Password"
-                  className="p-3 w-80 font-mono text-sm login outline-none rounded-md shadow"
-                />
+
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <Link to="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                  Forgot password?
+                </Link>
               </div>
             </div>
-            <div className="ml-24">
-              <div className="login text-sm font-semibold">
-                Forgot password?
-              </div>
-            </div>
-            <div className="ml-24 pl-0 p-5 ">
-              <Button
-                variant="contained"
+
+            <div>
+              <button
                 type="submit"
-                className="inline-block py-2 px-4 text-white font-bold rounded-md bg-blue-500 hover:bg-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110"
-                // className="w-fit p-3 rounded-lg text-white font-semibold button flex"
                 onClick={() => {
                   setInitialvalues(props.values);
                   setOpen(true);
                 }}
+                className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
-                <div className="pr-20 pl-5">Log In</div>
-                <div className="p-1">
-                  <FaArrowRight />
-                </div>
-              </Button>
-              <Snackbar
-                className={snackbarClass}
-                sx={{ width: "310px" }}
-                open={open}
-                autoHideDuration={5000}
-                onClose={handleClose}
-                action={action}
-                message={snackbarMsg}
-                anchorOrigin={{
-                  vertical: "Bottom",
-                  horizontal: "Left",
-                }}
-              />
+                <span>Sign in</span>
+                <FaArrowRight className="ml-2" />
+              </button>
             </div>
-            <div className="h-20">
-              <div className="login ml-24 text-xs h-12 flex rounded-full border-gray-400  pr-3 pl-3 round">
-                <div className="pl-9 pt-4">don’t have an account yet?</div>
-                <Link to="/signup">
-                  <div className="font-semibold  pt-4 pl-2 underline hover:cursor-pointer">
-                    Sign up
-                  </div>
-                </Link>
-              </div>
+
+            <div className="text-center text-sm">
+              <span className="text-gray-600">Don't have an account?</span>{" "}
+              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                Sign up
+              </Link>
             </div>
+
+            <Snackbar
+              className={snackbarClass}
+              sx={{ width: "310px" }}
+              open={open}
+              autoHideDuration={5000}
+              onClose={handleClose}
+              action={action}
+              message={snackbarMsg}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+            />
           </Form>
         )}
       </Formik>
-      {/* </>
-      )} */}
-    </>
+    </motion.div>
   );
-}
+});
 
 export default Fields;

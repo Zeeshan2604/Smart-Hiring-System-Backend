@@ -1,214 +1,164 @@
-import React from "react";
-import { useRef } from "react";
+// Template2.js (Enhanced Modern Look)
+import React, { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import {
-  FaEnvelope,
-  FaGithub,
-  FaLinkedin,
-  FaPhone,
-  FaPrint,
-} from "react-icons/fa";
 
-function Template2(props) {
-  const { basicinfo, workinfo, eduinfo, setResume, picture } = props;
-
+const Template2 = ({ basicinfo, eduinfo, workinfo, preview = false }) => {
+  const { name, designation, email, phone, objective, git, lin, skills, image } = basicinfo || {};
+  const education = eduinfo?.education || [];
+  const work = workinfo?.work || [];
+  const skillList = (skills || "").split(",").map(s => s.trim()).filter(Boolean);
   const componentRef = useRef();
 
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
+  // Always call the hook
+  const handlePrint = useReactToPrint({ content: () => componentRef.current });
 
-  const handleBack = () => {
-    setResume(false);
-  };
-
+  if (preview) {
   return (
-    <div className="bg-gray-100 min-h-screen px-4 sm:px-6 lg:px-8">
-      <div className="">
-        <div
-          className="max-w-3xl mx-auto py-12 p-5 border-2 border-black  "
-          ref={componentRef}
-        >
-          <div className="flex items-center justify-between">
-            <img
-              className="h-16 w-16 rounded-full mr-4"
-              src={picture}
-              alt={basicinfo.name}
-            />
-            <div className="flex-grow text-right">
-              <div className="text-4xl font-bold leading-none">
-                {basicinfo.name}
-              </div>
-              <div className="text-lg">{basicinfo.designation}</div>
-              <div className="text-lg">{basicinfo.email}</div>
-              <div className="text-lg">{basicinfo.phone}</div>
-              <div className="text-lg flex items-center justify-end">
-                <a
-                  href={basicinfo.git}
-                  className="mr-3"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FaGithub className="mr-1" /> GitHub
-                </a>
-                <a
-                  href={basicinfo.lin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FaLinkedin className="mr-1" /> LinkedIn
-                </a>
-              </div>
-            </div>
+      <div ref={componentRef} className="bg-white w-[800px] min-h-[1122px] px-12 py-10 shadow-2xl rounded-xl border border-gray-200 text-gray-900 font-sans print:shadow-none print:border-none">
+        {/* Header */}
+        <div className="border-b-2 border-gray-300 pb-6 mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-5xl font-extrabold tracking-tight text-blue-900">{name}</h1>
+            <h2 className="text-2xl text-gray-600 mt-1">{designation}</h2>
           </div>
-
-          <div className="py-8">
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Summary
-                </h3>
-                <div className="mt-2 max-w-xl text-sm text-gray-500">
-                  {basicinfo.objective}
-                </div>
-              </div>
-              <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                <div className="sm:divide-y sm:divide-gray-200">
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">
-                      Location
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {basicinfo.location}
-                    </dd>
-                  </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">
-                      Education
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {eduinfo.education.map((item) => {
-                        return (
-                          <div key={item.name}>
-                            <div className="font-medium">{item.name}</div>
-                            <div>{item.collage}</div>
-                            <div>
-                              {item.start} - {item.end} ({item.percentage}%)
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </dd>
-                  </div>
-                </div>
-              </div>
+          {image && <img src={image} alt="Profile" className="w-28 h-28 rounded-full object-cover border-4 border-blue-200 shadow-lg" />}
             </div>
 
-            <div className="py-8">
-              <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="px-4 py-5 sm:px-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    Work Experience
-                  </h3>
-                </div>
-                <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                  <dl className="sm:divide-y sm:divide-gray-200">
-                    {workinfo.work.map((item) => {
-                      return (
-                        <div
-                          key={item.title}
-                          className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-                        >
-                          <dt className="text-sm font-medium text-gray-500">
-                            {item.title}
-                          </dt>
-                          <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            <div className="font-medium">{item.company}</div>
-                            <div>{item.duration}</div>
-                            <div>{item.description}</div>
-                          </dd>
-                        </div>
-                      );
-                    })}
-                  </dl>
-                </div>
-              </div>
+        {/* Contact */}
+        <div className="grid grid-cols-2 gap-y-2 gap-x-10 text-sm mb-6">
+          <div><span className="font-semibold">📧 Email:</span> {email}</div>
+          <div><span className="font-semibold">📞 Phone:</span> {phone}</div>
+          <div><span className="font-semibold">💻 GitHub:</span> <a href={git} className="text-blue-600 underline">{git}</a></div>
+          <div><span className="font-semibold">🔗 LinkedIn:</span> <a href={lin} className="text-blue-600 underline">{lin}</a></div>
             </div>
 
-            <div className="py-8">
-              <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="px-4 py-5 sm:px-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    Skills
-                  </h3>
-                </div>
-                <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                  <div className="flex flex-wrap">
-                    {basicinfo.skills.map((skill, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-200 px-2 py-1 rounded-full text-sm font-semibold text-gray-700 mr-2 mb-2"
-                      >
+        {/* Objective */}
+        {objective && (
+          <section className="mb-8">
+            <h3 className="text-2xl font-bold text-blue-800 border-b border-gray-300 mb-2">Career Objective</h3>
+            <p className="text-gray-700 text-base leading-relaxed whitespace-pre-line italic">{objective}</p>
+          </section>
+        )}
+
+        {/* Skills */}
+        <section className="mb-8">
+          <h3 className="text-2xl font-bold text-blue-800 border-b border-gray-300 mb-3">Skills</h3>
+          <ul className="flex flex-wrap gap-3">
+            {skillList.map((skill, idx) => (
+              <li key={idx} className="bg-blue-100 px-4 py-2 rounded-full text-sm font-semibold text-blue-800 border border-blue-300 shadow-sm">
                         {skill}
-                      </div>
+              </li>
                     ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+          </ul>
+        </section>
 
-            <div className="flex justify-between py-8">
-              <div className="flex">
-                <div className="flex items-center">
-                  <a
-                    href={`mailto:${basicinfo.email}`}
-                    className="text-gray-700 hover:text-gray-900 mr-3"
-                  >
-                    <FaEnvelope className="mr-1" />
-                  </a>
-                  <a
-                    href={`tel:${basicinfo.phone}`}
-                    className="text-gray-700 hover:text-gray-900 mr-3"
-                  >
-                    <FaPhone className="mr-1" />
-                  </a>
-                  <a
-                    href={basicinfo.git}
-                    className="text-gray-700 hover:text-gray-900 mr-3"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaGithub className="mr-1" />
-                  </a>
-                  <a
-                    href={basicinfo.lin}
-                    className="text-gray-700 hover:text-gray-900"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaLinkedin className="mr-1" />
-                  </a>
+        {/* Education */}
+        <section className="mb-8">
+          <h3 className="text-2xl font-bold text-blue-800 border-b border-gray-300 mb-3">Education</h3>
+          <ul className="space-y-4">
+            {education.map((edu, idx) => (
+              <li key={idx} className="border-l-4 border-blue-400 pl-4">
+                <div className="text-lg font-semibold text-blue-900">{edu.name} - {edu.collage}</div>
+                <div className="text-sm text-gray-600">{edu.start} - {edu.end}</div>
+                <div className="text-sm text-gray-500 italic">{edu.percentage}</div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Work Experience */}
+        <section>
+          <h3 className="text-2xl font-bold text-blue-800 border-b border-gray-300 mb-3">Work Experience</h3>
+          <ul className="space-y-5">
+            {work.map((job, idx) => (
+              <li key={idx} className="border-l-4 border-blue-400 pl-4">
+                <div className="text-lg font-semibold text-blue-900">{job.position} - {job.company}</div>
+                <div className="text-sm text-gray-600">{job.start} - {job.end} | {job.location}</div>
+                <p className="text-sm text-gray-700 mt-1 whitespace-pre-line">{job.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
                 </div>
-              </div>
-            </div>
+    );
+  }
+  return (
+    <div className="flex flex-col items-center bg-gradient-to-br from-gray-100 to-white min-h-screen py-10">
+      <div ref={componentRef} className="bg-white w-[800px] min-h-[1122px] px-12 py-10 shadow-2xl rounded-xl border border-gray-200 text-gray-900 font-sans print:shadow-none print:border-none">
+        {/* Header */}
+        <div className="border-b-2 border-gray-300 pb-6 mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-5xl font-extrabold tracking-tight text-blue-900">{name}</h1>
+            <h2 className="text-2xl text-gray-600 mt-1">{designation}</h2>
           </div>
+          {image && <img src={image} alt="Profile" className="w-28 h-28 rounded-full object-cover border-4 border-blue-200 shadow-lg" />}
         </div>
-        <div className="flex w-96 p-5 justify-between mx-auto">
-          <button
-            className="bg-gray-700 hover:bg-gray-600 w-32 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={handleBack}
-          >
-            Edit
-          </button>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 w-32 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-4"
-            onClick={handlePrint}
-          >
-            <FaPrint className="mr-1" /> Print
-          </button>
+
+        {/* Contact */}
+        <div className="grid grid-cols-2 gap-y-2 gap-x-10 text-sm mb-6">
+          <div><span className="font-semibold">📧 Email:</span> {email}</div>
+          <div><span className="font-semibold">📞 Phone:</span> {phone}</div>
+          <div><span className="font-semibold">💻 GitHub:</span> <a href={git} className="text-blue-600 underline">{git}</a></div>
+          <div><span className="font-semibold">🔗 LinkedIn:</span> <a href={lin} className="text-blue-600 underline">{lin}</a></div>
         </div>
+
+        {/* Objective */}
+        {objective && (
+          <section className="mb-8">
+            <h3 className="text-2xl font-bold text-blue-800 border-b border-gray-300 mb-2">Career Objective</h3>
+            <p className="text-gray-700 text-base leading-relaxed whitespace-pre-line italic">{objective}</p>
+          </section>
+        )}
+
+        {/* Skills */}
+        <section className="mb-8">
+          <h3 className="text-2xl font-bold text-blue-800 border-b border-gray-300 mb-3">Skills</h3>
+          <ul className="flex flex-wrap gap-3">
+            {skillList.map((skill, idx) => (
+              <li key={idx} className="bg-blue-100 px-4 py-2 rounded-full text-sm font-semibold text-blue-800 border border-blue-300 shadow-sm">
+                {skill}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Education */}
+        <section className="mb-8">
+          <h3 className="text-2xl font-bold text-blue-800 border-b border-gray-300 mb-3">Education</h3>
+          <ul className="space-y-4">
+            {education.map((edu, idx) => (
+              <li key={idx} className="border-l-4 border-blue-400 pl-4">
+                <div className="text-lg font-semibold text-blue-900">{edu.name} - {edu.collage}</div>
+                <div className="text-sm text-gray-600">{edu.start} - {edu.end}</div>
+                <div className="text-sm text-gray-500 italic">{edu.percentage}</div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Work Experience */}
+        <section>
+          <h3 className="text-2xl font-bold text-blue-800 border-b border-gray-300 mb-3">Work Experience</h3>
+          <ul className="space-y-5">
+            {work.map((job, idx) => (
+              <li key={idx} className="border-l-4 border-blue-400 pl-4">
+                <div className="text-lg font-semibold text-blue-900">{job.position} - {job.company}</div>
+                <div className="text-sm text-gray-600">{job.start} - {job.end} | {job.location}</div>
+                <p className="text-sm text-gray-700 mt-1 whitespace-pre-line">{job.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
+
+      <button
+        onClick={handlePrint}
+        className="mt-6 bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded-full shadow-lg transition-all"
+      >
+        Download PDF
+      </button>
     </div>
   );
-}
+};
+
 export default Template2;

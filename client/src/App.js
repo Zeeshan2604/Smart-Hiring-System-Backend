@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { BrowserRouter } from "react-router-dom";
 import Loader from "./Loader/Loader";
-import WithoutLogin from "./Routing/WithoutLogin.jsx";
-import WithLogin from "./Routing/WithLogin";
-import InterviewShow from "./Student/InterviewShow.jsx";
+import { SnackbarProvider } from './Snackbar/Snackbar';
+// Lazy load WithLogin and WithoutLogin
+const WithLogin = lazy(() => import("./Routing/WithLogin"));
+const WithoutLogin = lazy(() => import("./Routing/WithoutLogin.jsx"));
+// import InterviewShow from "./Student/InterviewShow.jsx";
 
 function App() {
   const [isLogged, setIsLoggedIn] = useState(false); // sessionstorage login check
   const [status, setStatus] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [refresher, setRefresher] = useState(true);
 
   useEffect(() => {
     const loggedInStatus = sessionStorage.getItem('isLoggedIn');
@@ -24,27 +27,31 @@ function App() {
   }, []);
 
   return (
-    <>
+    <SnackbarProvider>
       {isLoading ? (
         <Loader /> // Display the loader while loading
       ) : (
         <BrowserRouter>
-          {isLogged ? (
-            <WithLogin
-              setStatus={setStatus}
-              status={status}
-              setIsLoggedIn={setIsLoggedIn}
-            />
-          ) : (
-            <WithoutLogin
-              setStatus={setStatus}
-              status={status}
-              setIsLoggedIn={setIsLoggedIn}
-            />
-          )}
+          <Suspense fallback={<Loader />}>
+            {isLogged ? (
+              <WithLogin
+                setStatus={setStatus}
+                status={status}
+                setIsLoggedIn={setIsLoggedIn}
+              />
+            ) : (
+              <WithoutLogin
+                setStatus={setStatus}
+                status={status}
+                setIsLoggedIn={setIsLoggedIn}
+                refresher={refresher}
+                setRefresher={setRefresher}
+              />
+            )}
+          </Suspense>
         </BrowserRouter>
       )}
-    </>
+    </SnackbarProvider>
   );
 }
 

@@ -1,7 +1,7 @@
 import InterviewShow from "./InterviewShow";
 import React, { useState } from "react";
 
-const SwitchInterviewWindow = ({ UserDataData ,ItrId,setItrId}) => {
+const SwitchInterviewWindow = ({ UserDataData, ItrId, setItrId, onInterviewStart }) => {
   //Swithcing
   return (
     <>
@@ -9,6 +9,7 @@ const SwitchInterviewWindow = ({ UserDataData ,ItrId,setItrId}) => {
         setItrId={setItrId}
         UserDataData={UserDataData}
         ItrId={ItrId}
+        onInterviewStart={onInterviewStart}
       />
     </>
   );
