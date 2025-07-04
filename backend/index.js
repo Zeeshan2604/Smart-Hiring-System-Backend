@@ -39,20 +39,43 @@ app.use(cookieParser());
 
 const PORT = process.env.PORT || 8080;
 
+// Track server readiness
+let serverReady = false;
+
 // Debug route to check if server is running
 app.get('/health', (req, res) => {
   console.log('Health check endpoint hit');
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-    port: PORT
-  });
+  if (serverReady) {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'Server is running',
+      timestamp: new Date().toISOString(),
+      port: PORT,
+      ready: true
+    });
+  } else {
+    res.status(503).json({ 
+      status: 'starting', 
+      message: 'Server is starting up',
+      timestamp: new Date().toISOString(),
+      port: PORT,
+      ready: false
+    });
+  }
 });
 
 // Simple test route
 app.get('/test', (req, res) => {
   res.json({ message: 'Server is working!' });
+});
+
+// Root route for basic connectivity
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Smart Hiring System API',
+    status: 'running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Sentry initialization (only if DSN is provided)
@@ -158,10 +181,17 @@ if (process.env.SENTRY_DSN) {
 const server = app.listen(PORT, () => {
   console.log(`\nServer is running on port ${PORT}`);
   console.log('\nAvailable endpoints:');
+  console.log('- GET /');
   console.log('- GET /health');
   console.log('- GET /test');
   console.log('- POST /api/v1/ViewProfile/update');
   console.log('- GET /api/v1/test');
+  
+  // Mark server as ready after a short delay
+  setTimeout(() => {
+    serverReady = true;
+    console.log('Server is now ready to accept requests');
+  }, 2000); // 2 second delay
 });
 
 // Handle server errors
@@ -175,6 +205,7 @@ server.on('error', (error) => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully');
+  serverReady = false;
   server.close(() => {
     console.log('Process terminated');
   });
@@ -182,6 +213,7 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down gracefully');
+  serverReady = false;
   server.close(() => {
     console.log('Process terminated');
   });
