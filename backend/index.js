@@ -45,46 +45,38 @@ let serverReady = false;
 // Debug route to check if server is running
 app.get('/health', (req, res) => {
   console.log('Health check endpoint hit');
-  if (serverReady) {
-    res.status(200).json({ 
-      status: 'ok', 
-      message: 'Server is running',
-      timestamp: new Date().toISOString(),
-      port: PORT,
-      ready: true
-    });
-  } else {
-    res.status(503).json({ 
-      status: 'starting', 
-      message: 'Server is starting up',
-      timestamp: new Date().toISOString(),
-      port: PORT,
-      ready: false
-    });
-  }
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    port: PORT,
+    ready: true,
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Simple test route
 app.get('/test', (req, res) => {
   res.json({ message: 'Server is working!' });
-});
+  });
 
 // Root route for basic connectivity
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Smart Hiring System API',
     status: 'running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
 // Sentry initialization (only if DSN is provided)
 if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    tracesSampleRate: 1.0,
-  });
-  app.use(Sentry.Handlers.requestHandler());
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
+app.use(Sentry.Handlers.requestHandler());
   console.log('Sentry initialized');
 } else {
   console.log('Sentry DSN not provided, skipping Sentry initialization');
@@ -93,7 +85,13 @@ if (process.env.SENTRY_DSN) {
 // Rate limiting middleware
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 1000 requests per windowMs (increased for development)
+  message: {
+    status: "error",
+    message: "Too many requests from this IP, please try again later."
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
 
@@ -103,25 +101,25 @@ try {
   const { Router1,Router2,Router3,Router4, Router5 ,Router6,Router7,Router8,Router9,Router10,Router11,Router12,Router13,Router14} = require("./Routers/router.config");
   const otherRoutes = require('./Routes/Other_Routes');
 
-  app.use('/api/v1/login', Router1);
-  app.use('/api/v1/SignUp', Router2);
-  app.use('/api/v1/CalculateResult', Router3);
-  app.use('/api/v1/AddNewInterview', Router4);
-  app.use('/api/v1/AddNewResult', Router5);
-  app.use('/api/v1/SubmitInterview', Router6);
-  app.use('/api/v1/ViewProfile', Router7);
-  app.use('/api/v1/ViewInterviewList', Router8);
-  app.use('/api/v1/ViewInterview', Router9);
-  app.use('/api/v1/DetectEmotion', Router10);
-  app.use('/api/v1/FindUser', Router11);
-  app.use('/api/v1/FindResult', Router12);
-  app.use('/api/v1/ToneAnalysis', Router13);
-  app.use('/api/v1/Chatbot', Router14);
+app.use('/api/v1/login', Router1);
+app.use('/api/v1/SignUp', Router2);
+app.use('/api/v1/CalculateResult', Router3);
+app.use('/api/v1/AddNewInterview', Router4);
+app.use('/api/v1/AddNewResult', Router5);
+app.use('/api/v1/SubmitInterview', Router6);
+app.use('/api/v1/ViewProfile', Router7);
+app.use('/api/v1/ViewInterviewList', Router8);
+app.use('/api/v1/ViewInterview', Router9);
+app.use('/api/v1/DetectEmotion', Router10);
+app.use('/api/v1/FindUser', Router11);
+app.use('/api/v1/FindResult', Router12);
+app.use('/api/v1/ToneAnalysis', Router13);
+app.use('/api/v1/Chatbot', Router14);
 
-  // Mount Other Routes
-  console.log('\nMounting Other Routes...');
-  app.use('/api/v1', otherRoutes);
-  console.log('Other Routes mounted successfully');
+// Mount Other Routes
+console.log('\nMounting Other Routes...');
+app.use('/api/v1', otherRoutes);
+console.log('Other Routes mounted successfully');
 } catch (error) {
   console.error('Error loading routes:', error.message);
   // Continue without routes for now
@@ -164,9 +162,9 @@ app.use((Error, req, res, next) => {
 // Start BullMQ workers with error handling
 console.log('\nInitializing background workers...');
 try {
-  require('./jobs/emailProcessor');
-  require('./jobs/nlpProcessor');
-  require('./jobs/resultProcessor');
+require('./jobs/emailProcessor');
+require('./jobs/nlpProcessor');
+require('./jobs/resultProcessor');
   console.log(' All background workers initialized');
 } catch (error) {
   console.error(' Error initializing background workers:', error.message);
@@ -174,11 +172,11 @@ try {
 }
 
 if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.errorHandler());
+app.use(Sentry.Handlers.errorHandler());
 }
 
 // Start server with error handling
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`\nServer is running on port ${PORT}`);
   console.log('\nAvailable endpoints:');
   console.log('- GET /');
@@ -187,11 +185,9 @@ const server = app.listen(PORT, () => {
   console.log('- POST /api/v1/ViewProfile/update');
   console.log('- GET /api/v1/test');
   
-  // Mark server as ready after a short delay
-  setTimeout(() => {
-    serverReady = true;
-    console.log('Server is now ready to accept requests');
-  }, 2000); // 2 second delay
+  // Mark server as ready immediately
+  serverReady = true;
+  console.log('Server is now ready to accept requests');
 });
 
 // Handle server errors
@@ -205,15 +201,6 @@ server.on('error', (error) => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully');
-  serverReady = false;
-  server.close(() => {
-    console.log('Process terminated');
-  });
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  serverReady = false;
   server.close(() => {
     console.log('Process terminated');
   });
