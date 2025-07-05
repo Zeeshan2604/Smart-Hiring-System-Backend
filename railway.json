@@ -17,7 +17,9 @@
         "NODE_ENV": "production",
         "PORT": "8080",
         "MONGODB_URI": "mongodb+srv://sherikarmohid1527:GQG3SgSsAuGTT7sU@cluster0.8xkvp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
-        "REDIS_ENABLED": "false"
+        "REDIS_ENABLED": "false",
+        "HUGGING_FACE_TOKEN": "hf_your_hugging_face_token_here",
+        "JWT_SECRET": "your_jwt_secret_here",
       }
     }
   }
